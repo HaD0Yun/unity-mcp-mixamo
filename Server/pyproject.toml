@@ -1,0 +1,34 @@
+[project]
+name = "unity-mcp-mixamo"
+version = "1.0.0"
+description = "Mixamo Animation Tool extension for Unity MCP - Fetch and apply animations using natural language"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Unity MCP Mixamo Contributors"}
+]
+keywords = ["mcp", "mixamo", "unity", "animation", "ai", "llm"]
+
+dependencies = [
+    "httpx>=0.27.2",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23",
+]
+
+[build-system]
+requires = ["setuptools>=64.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.pyright]
+pythonVersion = "3.10"
+typeCheckingMode = "basic"

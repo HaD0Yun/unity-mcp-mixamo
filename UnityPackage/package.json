@@ -1,0 +1,33 @@
+{
+    "name": "com.mcpforunity.mixamo",
+    "version": "1.0.0",
+    "displayName": "MCP Mixamo Animation Tools",
+    "description": "Mixamo animation auto-fetch integration for Unity MCP. Enables AI assistants to search, download, and configure Mixamo animations directly in Unity Editor via natural language commands.",
+    "unity": "2021.3",
+    "unityRelease": "0f1",
+    "documentationUrl": "https://github.com/your-repo/unity-mcp-mixamo#readme",
+    "changelogUrl": "https://github.com/your-repo/unity-mcp-mixamo/blob/main/CHANGELOG.md",
+    "licensesUrl": "https://github.com/your-repo/unity-mcp-mixamo/blob/main/LICENSE",
+    "dependencies": {
+        "com.ivanmurzak.unity.mcp": "0.27.0"
+    },
+    "keywords": [
+        "mcp",
+        "mixamo",
+        "animation",
+        "ai",
+        "llm",
+        "claude",
+        "humanoid",
+        "auto-fetch",
+        "rigging"
+    ],
+    "author": {
+        "name": "MCPForUnity",
+        "url": "https://github.com/your-repo/unity-mcp-mixamo"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/your-repo/unity-mcp-mixamo.git"
+    }
+}
