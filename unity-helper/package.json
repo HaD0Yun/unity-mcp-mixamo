@@ -1,0 +1,19 @@
+{
+    "name": "com.mixamohelper",
+    "version": "1.0.0",
+    "displayName": "Mixamo Helper",
+    "description": "Lightweight Unity utilities for Mixamo animations - auto Humanoid rig setup and Animator Controller generation. No external dependencies.",
+    "unity": "2021.3",
+    "unityRelease": "0f1",
+    "documentationUrl": "https://github.com/HaD0Yun/unity-mcp-mixamo#unity-helper",
+    "keywords": [
+        "mixamo",
+        "animation",
+        "humanoid",
+        "animator"
+    ],
+    "author": {
+        "name": "HaD0Yun",
+        "url": "https://github.com/HaD0Yun"
+    }
+}

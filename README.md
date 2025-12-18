@@ -1,72 +1,83 @@
-# Unity MCP Mixamo Animation Tools
+# Mixamo MCP
 
 [![MCP Enabled](https://badge.mcpx.dev?status=on)](https://modelcontextprotocol.io)
-[![Unity](https://img.shields.io/badge/Unity-2021.3+-000000?style=flat&logo=unity&logoColor=blue)](https://unity.com)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org)
+[![Unity](https://img.shields.io/badge/Unity-2021.3+-000000?style=flat&logo=unity)](https://unity.com)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Automatically fetch and apply animations from **Mixamo** to humanoid characters in Unity using natural language commands through the **Model Context Protocol (MCP)**.
-
-## Overview
-
-This package extends [Unity-MCP](https://github.com/IvanMurzak/Unity-MCP) to enable seamless Mixamo integration:
+**Standalone MCP server** for downloading Mixamo animations. Works with **any MCP client** - Claude Desktop, VS Code, Cursor, or custom integrations.
 
 ```
-AI Assistant: "Download idle, walk, run, and jump animations for Player"
-      ↓
-[MCP Tool] → [Mixamo API] → [Download FBX] → [Unity Import] → [Create Animator]
-      ↓
-Result: Character with configured Animator Controller ready to use!
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────┐
+│  Any MCP Client │────▶│  Mixamo MCP     │────▶│   Unity     │
+│  (Claude, etc)  │     │  (Python)       │     │  (Import)   │
+└─────────────────┘     └─────────────────┘     └─────────────┘
 ```
 
-## Features
+## Why Standalone?
 
-- **MCP Tool Integration**: 8 dedicated tools for Mixamo operations
-- **Smart Keyword Mapping**: "run" automatically searches "running", "jog", "sprint"
-- **Auto-Configuration**: Humanoid rig setup, looping detection, root motion
-- **Animator Controller Generation**: Complete state machine with transitions
-- **Batch Download**: Fetch multiple animations in one command
-- **Encrypted Token Storage**: Secure credential management
+Unlike Unity-specific MCP plugins, this server:
+- ✅ Works with **any** MCP client (not locked to one implementation)
+- ✅ No Unity-MCP dependency required
+- ✅ Can download to any folder (Unity, Unreal, Godot, etc.)
+- ✅ Standard MCP protocol compliance
 
-## Prerequisites
+## Quick Start
 
-- **Unity**: 2021.3 LTS or newer
-- **Unity-MCP**: v0.27.0+ ([OpenUPM](https://openupm.com/packages/com.ivanmurzak.unity.mcp/))
-- **Adobe/Mixamo Account**: Free account at [mixamo.com](https://www.mixamo.com)
+### 1. Install the Server
 
-## Installation
+```bash
+pip install mixamo-mcp
+```
 
-### Via Unity Package Manager (Git URL)
+Or from source:
+```bash
+cd server
+pip install -e .
+```
 
-1. Open Unity Package Manager (Window → Package Manager)
-2. Click `+` → Add package from git URL
-3. Enter: `https://github.com/YOUR_REPO/unity-mcp-mixamo.git?path=/UnityPackage`
+### 2. Configure Your MCP Client
 
-### Via Local Folder
+**Claude Desktop** (`claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "mixamo": {
+      "command": "mixamo-mcp"
+    }
+  }
+}
+```
 
-1. Clone this repository
-2. In Unity Package Manager: `+` → Add package from disk
-3. Select `UnityPackage/package.json`
+**VS Code / Cursor** (settings.json):
+```json
+{
+  "mcp.servers": {
+    "mixamo": {
+      "command": "mixamo-mcp"
+    }
+  }
+}
+```
 
-## Authentication Setup
+### 3. Authenticate
 
-### Getting Your Mixamo Token
-
-1. Go to [mixamo.com](https://www.mixamo.com) and log in
-2. Open browser DevTools (F12)
-3. In Console, run: `localStorage.access_token`
+Get your token from [mixamo.com](https://www.mixamo.com):
+1. Log in to Mixamo
+2. Open DevTools (F12) → Console
+3. Run: `localStorage.access_token`
 4. Copy the token
 
-### Setting the Token
-
-Use the MCP tool or Unity menu:
-
-**Via MCP Tool:**
+Then use the `mixamo-auth` tool:
 ```
 mixamo-auth accessToken="your_token_here"
 ```
 
-**Via Unity Menu:**
-Tools → Mixamo → 2. Set Token
+### 4. Download Animations!
+
+```
+mixamo-batch animations="idle,walk,run,jump" outputDir="D:/MyGame/Assets/Animations" characterName="Player"
+```
 
 ## MCP Tools
 
@@ -75,128 +86,102 @@ Tools → Mixamo → 2. Set Token
 | `mixamo-auth` | Store/validate authentication token |
 | `mixamo-search` | Search animations by keyword |
 | `mixamo-download` | Download single animation |
-| `mixamo-batch` | Batch download multiple animations |
-| `mixamo-upload` | Upload character for auto-rigging |
-| `mixamo-configure` | Create Animator Controller |
-| `mixamo-apply` | Apply Animator to GameObject |
+| `mixamo-batch` | Download multiple animations |
 | `mixamo-keywords` | List available keywords |
 
-## Usage Examples
+### Examples
 
-### Search Animations
-```
+```bash
+# Search for animations
 mixamo-search keyword="attack" limit=10
-```
 
-### Download Single Animation
-```
-mixamo-download animationIdOrName="idle" characterName="Player"
-```
+# Download single animation
+mixamo-download animationIdOrName="idle" outputDir="./animations"
 
-### Batch Download (Recommended)
-```
-mixamo-batch characterName="Player" animations="idle,walk,run,jump,attack"
-```
+# Batch download
+mixamo-batch animations="idle,walk,run,jump,attack" outputDir="./animations" characterName="Hero"
 
-### Create Animator Controller
-```
-mixamo-configure animationFolder="Assets/Animations/Player" defaultState="Idle"
+# List keywords by category
+mixamo-keywords filter="combat"
 ```
 
 ## Animation Keywords
 
-| Keyword | Searches For |
-|---------|-------------|
-| `idle` | idle, breathing idle, standing idle |
-| `walk` | walking, walk, strut |
-| `run` | running, run, jog, sprint |
-| `jump` | jump, jumping, hop, leap |
-| `attack` | attack, melee attack, swing, slash |
-| `death` | death, dying, die |
-| `dance` | dance, dancing, groove |
+| Category | Keywords |
+|----------|----------|
+| **Locomotion** | idle, walk, run, jump, crouch, climb, swim, fall |
+| **Combat** | attack, punch, kick, sword, block, dodge, shoot, death |
+| **Social** | wave, bow, clap, cheer, laugh, sit, talk |
+| **Dance** | dance, hip hop, salsa, robot, breakdance |
 
-Use `mixamo-keywords` to see the full list.
+Use `mixamo-keywords` for the full list.
 
-## Output Structure
+---
+
+## Unity Helper (Optional)
+
+For Unity projects, we provide a lightweight helper package that:
+- Auto-configures imported FBX as Humanoid rig
+- Creates Animator Controllers from animation folders
+
+### Installation
+
+Via Unity Package Manager:
+```
+https://github.com/HaD0Yun/unity-mcp-mixamo.git?path=unity-helper
+```
+
+### Features
+
+**Auto Humanoid Setup**: FBX files in `Animations/` folders are automatically configured with Humanoid rig.
+
+**Animator Builder**: Select a folder → Tools → Mixamo Helper → Create Animator
+
+See [unity-helper/README.md](unity-helper/README.md) for details.
+
+---
+
+## Repository Structure
 
 ```
-Assets/
-└── Animations/
-    └── {CharacterName}/
-        ├── {CharacterName}_Idle.fbx
-        ├── {CharacterName}_Walk.fbx
-        ├── {CharacterName}_Run.fbx
-        ├── {CharacterName}_Jump.fbx
-        └── {CharacterName}_Animator.controller
+unity-mcp-mixamo/
+├── server/                 # Python MCP Server (main)
+│   ├── src/mixamo_mcp/
+│   ├── pyproject.toml
+│   └── README.md
+│
+├── unity-helper/           # Unity utilities (optional)
+│   ├── Editor/
+│   ├── package.json
+│   └── README.md
+│
+└── README.md               # This file
 ```
 
-## Animator Controller
+## Comparison
 
-Auto-generated controller includes:
-
-**Parameters:**
-- `Speed` (Float) - Locomotion blend
-- `IsGrounded` (Bool) - Ground detection
-- `Jump` (Trigger) - Jump action
-- `Attack` (Trigger) - Attack action
-- `Hit` (Trigger) - Hit reaction
-- `Death` (Trigger) - Death animation
-
-**Default Transitions:**
-- Idle ↔ Walk (Speed threshold 0.1)
-- Walk ↔ Run (Speed threshold 0.5)
-- Any State → Jump (Jump trigger)
-- Any State → Attack (Attack trigger)
-- Any State → Death (Death trigger)
-
-## Unity Editor Menu
-
-Access via **Tools → Mixamo**:
-1. Check Token - Validate stored token
-2. Set Token - Enter new token
-3. Search Animations - Test search
-4. Batch Download - Download animations
-5. Clear Token - Remove stored token
-6. Show Keywords - List available keywords
-
-## Troubleshooting
-
-### Token Expired
-```
-Error: Authentication failed
-```
-Get a new token from mixamo.com (tokens expire periodically)
-
-### Animation Not Found
-```
-Error: No animations found for 'xyz'
-```
-Try broader keywords or use `mixamo-search` to see available animations
-
-### Rate Limited
-```
-Error: Rate limit exceeded
-```
-Wait a few seconds; automatic retry with exponential backoff is built-in
+| Feature | This Package | Unity-MCP Plugins |
+|---------|-------------|-------------------|
+| MCP Client Support | Any | Specific implementation |
+| Game Engine | Any | Unity only |
+| Dependencies | Python only | Unity-MCP required |
+| Animator Creation | Via Unity Helper | Built-in |
+| Protocol | Standard MCP | Implementation-specific |
 
 ## Limitations
 
 - **Unofficial API**: Mixamo API is reverse-engineered and may change
-- **Humanoid Only**: Only humanoid characters are supported
-- **Token Expiration**: Tokens expire; plan for re-authentication
-- **Rate Limits**: Respect Mixamo's rate limits
+- **Token Expiration**: Tokens expire; re-authentication needed periodically
+- **Humanoid Only**: Only humanoid animations supported
+- **Rate Limits**: Built-in retry, but respect Mixamo's limits
 
 This project is not affiliated with Adobe or Mixamo.
 
 ## License
 
-Apache License 2.0 - See [LICENSE](LICENSE) file.
+Apache License 2.0 - See [LICENSE](LICENSE)
 
 ## Credits
 
-- [Unity-MCP](https://github.com/IvanMurzak/Unity-MCP) by Ivan Murzak - Base MCP integration
 - [Mixamo](https://www.mixamo.com) by Adobe - Animation source
-
----
-
-Made for the Unity game development community
+- [MCP](https://modelcontextprotocol.io) by Anthropic - Protocol standard
