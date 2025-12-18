@@ -6,7 +6,7 @@
 
 **AI로 Mixamo 애니메이션을 자동 다운로드**하는 MCP 서버.
 
-Claude Desktop, Cursor, VS Code 등 모든 MCP 클라이언트에서 작동합니다.
+Claude Desktop, Cursor, VS Code, Windsurf 등 모든 MCP 클라이언트에서 작동합니다.
 
 ---
 
@@ -18,13 +18,80 @@ Claude Desktop, Cursor, VS Code 등 모든 MCP 클라이언트에서 작동합�
 
 원하는 폴더에 저장 (예: `C:\Tools\mixamo-mcp.exe`)
 
-### Step 2: Claude Desktop 설정
+### Step 2: MCP 클라이언트 설정
+
+사용하는 AI 도구에 맞게 설정하세요:
+
+<details>
+<summary><b>Claude Desktop</b></summary>
 
 설정 파일 열기:
 - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 - **Mac**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 
-다음 내용 추가:
+```json
+{
+  "mcpServers": {
+    "mixamo": {
+      "command": "C:\\Tools\\mixamo-mcp.exe"
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary><b>Cursor</b></summary>
+
+Settings → MCP → Add Server
+
+```json
+{
+  "mcpServers": {
+    "mixamo": {
+      "command": "C:\\Tools\\mixamo-mcp.exe"
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary><b>VS Code (Copilot MCP)</b></summary>
+
+`.vscode/mcp.json` 파일 생성:
+
+```json
+{
+  "servers": {
+    "mixamo": {
+      "command": "C:\\Tools\\mixamo-mcp.exe"
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary><b>Windsurf</b></summary>
+
+`~/.codeium/windsurf/mcp_config.json` 파일 편집:
+
+```json
+{
+  "mcpServers": {
+    "mixamo": {
+      "command": "C:\\Tools\\mixamo-mcp.exe"
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary><b>기타 MCP 클라이언트</b></summary>
+
+대부분의 MCP 클라이언트는 비슷한 형식을 사용합니다:
 
 ```json
 {
@@ -36,9 +103,12 @@ Claude Desktop, Cursor, VS Code 등 모든 MCP 클라이언트에서 작동합�
 }
 ```
 
-> 경로의 `\`를 `\\`로 입력해야 합니다!
+해당 도구의 MCP 설정 문서를 참고하세요.
+</details>
 
-### Step 3: Claude Desktop 재시작
+> ⚠️ 경로의 `\`를 `\\`로 입력해야 합니다!
+
+### Step 3: AI 도구 재시작
 
 완전히 종료 후 다시 실행.
 
@@ -46,13 +116,14 @@ Claude Desktop, Cursor, VS Code 등 모든 MCP 클라이언트에서 작동합�
 
 1. [mixamo.com](https://www.mixamo.com) 로그인
 2. F12 → Console 탭
-3. 입력: `localStorage.access_token`
-4. 나온 값 복사 (따옴표 제외)
-
-Claude에게:
-```
-mixamo-auth accessToken="복사한_토큰"
-```
+3. 아래 명령어 입력 (토큰이 클립보드에 복사됨):
+   ```javascript
+   copy(localStorage.access_token)
+   ```
+4. AI에게 말하기:
+   ```
+   mixamo-auth accessToken="여기에_붙여넣기"
+   ```
 
 ### 끝!
 
@@ -111,7 +182,7 @@ mixamo-keywords
 
 | 문제 | 해결 |
 |------|------|
-| Claude에서 도구가 안 보임 | Claude Desktop 완전 종료 후 재시작 |
+| AI에서 도구가 안 보임 | AI 도구 완전 종료 후 재시작 |
 | "Token expired" 에러 | mixamo.com에서 새 토큰 복사 |
 | 다운로드 실패 | 인터넷 연결 확인, 토큰 재설정 |
 | exe 실행 안됨 | Windows Defender에서 허용 |
@@ -128,7 +199,7 @@ cd unity-mcp-mixamo/server
 pip install -e .
 ```
 
-Claude Desktop 설정:
+MCP 클라이언트 설정:
 ```json
 {
   "mcpServers": {
