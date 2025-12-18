@@ -33,22 +33,6 @@
 
 ---
 
-## 🔧 작동 방식
-
-```mermaid
-graph LR
-    A[🤖 AI Client] -->|MCP Protocol| B[📦 Mixamo MCP]
-    B -->|API| C[🎭 Mixamo.com]
-    C -->|FBX| D[🎮 Unity Project]
-    
-    style A fill:#6366f1,color:#fff
-    style B fill:#22c55e,color:#fff
-    style C fill:#f97316,color:#fff
-    style D fill:#3b82f6,color:#fff
-```
-
----
-
 ## 📥 설치 (2분)
 
 ### Step 1: 다운로드

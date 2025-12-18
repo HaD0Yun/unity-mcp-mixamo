@@ -80,6 +80,7 @@ class MixamoClient:
             "Accept": "application/json",
             "Content-Type": "application/json",
             "X-Requested-With": "XMLHttpRequest",
+            "X-Api-Key": "mixamo2",
         }
         if self._access_token:
             headers["Authorization"] = f"Bearer {self._access_token}"
