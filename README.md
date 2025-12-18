@@ -8,6 +8,8 @@
 
 Claude Desktop, Cursor, VS Code, Windsurf 등 모든 MCP 클라이언트에서 작동합니다.
 
+한국어 | [English](README_EN.md)
+
 ---
 
 ## 설치 (2분)
