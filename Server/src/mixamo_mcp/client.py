@@ -181,6 +181,16 @@ class MixamoClient:
             animations=all_animations[:limit],
         )
 
+    def _is_uuid(self, value: str) -> bool:
+        """Check if value looks like a UUID."""
+        import re
+
+        uuid_pattern = re.compile(
+            r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            re.IGNORECASE,
+        )
+        return bool(uuid_pattern.match(value))
+
     async def download(
         self,
         animation_id_or_name: str,
@@ -191,12 +201,12 @@ class MixamoClient:
         """Download a single animation."""
         client = await self._get_client()
 
-        # If it looks like a name, search for it first
+        # If it doesn't look like a UUID, search for it first
         animation_id = animation_id_or_name
         animation_name = animation_id_or_name
 
-        if not animation_id_or_name.replace("-", "").replace("_", "").isalnum():
-            # Looks like a name, search for it
+        if not self._is_uuid(animation_id_or_name):
+            # Not a UUID, search for it
             search_result = await self.search(animation_id_or_name, limit=1)
             if search_result.animations:
                 animation_id = search_result.animations[0].id
