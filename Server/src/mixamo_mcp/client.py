@@ -6,6 +6,7 @@ import os
 import time
 from pathlib import Path
 from typing import Optional
+from dataclasses import dataclass, asdict
 
 import httpx
 
@@ -20,22 +21,40 @@ from .models import (
 from .keywords import get_search_queries
 
 
+@dataclass
+class MixamoConfig:
+    """Configuration for Mixamo MCP."""
+
+    unity_project_path: str = ""
+    default_character_name: str = "Player"
+    animations_subfolder: str = "Animations"
+
+    def get_unity_animations_path(self) -> Optional[str]:
+        """Get full path to Unity Animations folder."""
+        if not self.unity_project_path:
+            return None
+        return str(Path(self.unity_project_path) / "Assets" / self.animations_subfolder)
+
+
 class MixamoClient:
     """HTTP client for Mixamo API."""
 
     BASE_URL = "https://www.mixamo.com/api/v1"
     CDN_URL = "https://www.mixamo.com"
 
-    # Token storage file
+    # Storage files
     TOKEN_FILE = Path.home() / ".mixamo_mcp_token"
+    CONFIG_FILE = Path.home() / ".mixamo_mcp_config.json"
 
     def __init__(self, access_token: Optional[str] = None):
         self._access_token = access_token
         self._client: Optional[httpx.AsyncClient] = None
+        self._config: MixamoConfig = MixamoConfig()
 
-        # Load token from file if not provided
+        # Load token and config from files
         if not self._access_token:
             self._access_token = self._load_token()
+        self._load_config()
 
     @property
     def access_token(self) -> Optional[str]:
@@ -45,6 +64,10 @@ class MixamoClient:
     def access_token(self, value: str):
         self._access_token = value
         self._save_token(value)
+
+    @property
+    def config(self) -> MixamoConfig:
+        return self._config
 
     def _load_token(self) -> Optional[str]:
         """Load token from file."""
@@ -73,6 +96,62 @@ class MixamoClient:
                 self.TOKEN_FILE.unlink()
             except Exception:
                 pass
+
+    def _load_config(self) -> None:
+        """Load config from file."""
+        if self.CONFIG_FILE.exists():
+            try:
+                data = json.loads(self.CONFIG_FILE.read_text())
+                self._config = MixamoConfig(
+                    unity_project_path=data.get("unity_project_path", ""),
+                    default_character_name=data.get("default_character_name", "Player"),
+                    animations_subfolder=data.get("animations_subfolder", "Animations"),
+                )
+            except Exception:
+                self._config = MixamoConfig()
+        else:
+            self._config = MixamoConfig()
+
+    def _save_config(self) -> None:
+        """Save config to file."""
+        try:
+            self.CONFIG_FILE.write_text(json.dumps(asdict(self._config), indent=2))
+        except Exception as e:
+            print(f"Warning: Could not save config: {e}")
+
+    def set_unity_project(self, path: str) -> bool:
+        """Set Unity project path and validate it."""
+        project_path = Path(path)
+        assets_path = project_path / "Assets"
+
+        # Validate it looks like a Unity project
+        if not assets_path.exists():
+            return False
+
+        self._config.unity_project_path = str(project_path)
+        self._save_config()
+        return True
+
+    def set_config(
+        self,
+        unity_project_path: Optional[str] = None,
+        default_character_name: Optional[str] = None,
+        animations_subfolder: Optional[str] = None,
+    ) -> None:
+        """Update config values."""
+        if unity_project_path is not None:
+            self._config.unity_project_path = unity_project_path
+        if default_character_name is not None:
+            self._config.default_character_name = default_character_name
+        if animations_subfolder is not None:
+            self._config.animations_subfolder = animations_subfolder
+        self._save_config()
+
+    def get_output_dir(self, custom_dir: Optional[str] = None) -> Optional[str]:
+        """Get output directory, using Unity project if configured."""
+        if custom_dir:
+            return custom_dir
+        return self._config.get_unity_animations_path()
 
     def _get_headers(self) -> dict:
         """Get request headers."""
