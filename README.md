@@ -17,33 +17,31 @@
 
 ---
 
-## 🚀 신규 유저 설치 가이드
+## 🚀 설치 가이드
 
-### Step 1: Unity Package Manager에서 설치
+### Step 1: Unity 패키지 다운로드
 
-1. Unity 열기
-2. 상단 메뉴 **Window > Package Manager** 클릭
-3. 좌측 상단 **+** 버튼 클릭
-4. **Add package from git URL...** 선택
-5. 아래 URL 복사해서 붙여넣기:
-
-```
-https://github.com/HaD0Yun/unity-mcp-mixamo.git?path=unity-helper
-```
-
-6. **Add** 버튼 클릭하고 설치 완료될 때까지 대기
+[**📥 MixamoMcp-Unity.zip 다운로드**](https://github.com/HaD0Yun/unity-mcp-mixamo/releases/latest/download/MixamoMcp-Unity.zip)
 
 ---
 
-### Step 2: Mixamo MCP 창 열기
+### Step 2: Unity에 설치
+
+1. 다운로드한 ZIP 압축 해제
+2. `MixamoMcp` 폴더를 Unity 프로젝트의 `Assets/` 폴더에 드래그
+3. Unity가 자동으로 컴파일 (잠시 대기)
+
+---
+
+### Step 3: Mixamo MCP 창 열기
 
 1. Unity 상단 메뉴에서 **Window > Mixamo MCP** 클릭
 2. 창이 열리면 **Download & Install** 버튼 클릭
-3. 다운로드 완료되면 "✅ Installed" 표시 확인
+3. 다운로드 완료되면 "Installed" 표시 확인
 
 ---
 
-### Step 3: AI 도구 설정 (하나만 선택)
+### Step 4: AI 도구 설정
 
 사용하는 AI 도구의 **Configure** 버튼 클릭:
 
@@ -57,7 +55,7 @@ https://github.com/HaD0Yun/unity-mcp-mixamo.git?path=unity-helper
 
 ---
 
-### Step 4: Mixamo 토큰 설정
+### Step 5: Mixamo 토큰 설정
 
 1. 브라우저에서 [mixamo.com](https://www.mixamo.com) 접속 후 로그인
 2. 키보드 `F12` 눌러서 개발자 도구 열기
@@ -121,7 +119,7 @@ copy(localStorage.access_token)
 
 | 문제 | 해결 |
 |:-----|:-----|
-| Window > Mixamo MCP 메뉴가 없음 | Package Manager에서 패키지 제거 후 재설치 |
+| Window > Mixamo MCP 메뉴가 없음 | ZIP 다시 다운로드 후 Assets 폴더에 복사 |
 | Configure 버튼이 비활성화 | 먼저 Download & Install 실행 |
 | AI에서 mixamo 도구가 안 보임 | AI 도구 완전히 종료 후 재시작 |
 | "Token expired" 에러 | mixamo.com에서 새 토큰 복사 |
