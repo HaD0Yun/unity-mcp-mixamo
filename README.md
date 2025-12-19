@@ -5,17 +5,13 @@
 ### AI로 Mixamo 애니메이션을 자동 다운로드
 
 [![MCP](https://img.shields.io/badge/MCP-Protocol-00D4AA?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0wIDE4Yy00LjQxIDAtOC0zLjU5LTgtOHMzLjU5LTggOC04IDggMy41OSA4IDgtMy41OSA4LTggOHoiLz48L3N2Zz4=)](https://modelcontextprotocol.io)
-[![Windows](https://img.shields.io/badge/Windows-x64-0078D6?style=for-the-badge&logo=windows)](https://github.com/HaD0Yun/unity-mcp-mixamo/releases)
+[![Unity](https://img.shields.io/badge/Unity-2021.3+-000000?style=for-the-badge&logo=unity)](https://unity.com)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/HaD0Yun/unity-mcp-mixamo?style=for-the-badge&color=brightgreen)](https://github.com/HaD0Yun/unity-mcp-mixamo/releases)
 
-**Claude Desktop • Cursor • VS Code • Windsurf** 등 모든 MCP 클라이언트 지원
+**Claude Desktop • Cursor • Windsurf** 지원
 
 한국어 | [English](README_EN.md)
-
-<br>
-
-[<kbd> <br> 📥 다운로드 <br> </kbd>](https://github.com/HaD0Yun/unity-mcp-mixamo/releases/latest)
 
 </div>
 
@@ -25,106 +21,39 @@
 
 | | 기능 | 설명 |
 |:---:|:---|:---|
-| 🚀 | **원클릭 설치** | exe 파일 하나로 끝, Python 불필요 |
+| 🚀 | **원클릭 설정** | Unity 에디터에서 Configure 버튼만 클릭 |
 | 🤖 | **AI 통합** | 자연어로 애니메이션 요청 |
 | 📦 | **배치 다운로드** | 여러 애니메이션 한번에 다운로드 |
-| 🎮 | **Unity 지원** | FBX + Humanoid 자동 설정 |
+| 🎮 | **Unity 자동화** | FBX Humanoid 자동 설정 |
 | 🔌 | **범용 MCP** | 모든 MCP 클라이언트 호환 |
 
 ---
 
-## 📥 설치 (30초)
+## 📥 설치 (1분)
 
-### 🚀 원클릭 설치 (권장)
+### Step 1: Unity 패키지 설치
 
-<div align="center">
+**Package Manager (Git URL):**
 
-[<kbd> <br> 📥 **MixamoMCP-Setup.exe** 다운로드 <br> </kbd>](https://github.com/HaD0Yun/unity-mcp-mixamo/releases/latest)
-
-</div>
-
-1. **Setup.exe 실행** - 자동으로 MCP 클라이언트 감지 (Claude Desktop, Cursor, Windsurf)
-2. **Mixamo 토큰 입력** - [토큰 얻기](#-mixamo-토큰-얻는-법) 버튼 클릭하면 안내
-3. **설치 완료!** - AI 도구 재시작하면 끝
-
-<details>
-<summary><b>🔧 수동 설치 (고급 사용자)</b></summary>
-
-### Step 1: 다운로드
-
-[mixamo-mcp.exe 다운로드](https://github.com/HaD0Yun/unity-mcp-mixamo/releases/latest) → 원하는 폴더에 저장 (예: `C:\Tools\`)
-
-### Step 2: MCP 클라이언트 설정
-
-<details>
-<summary>🟣 Claude Desktop</summary>
-
-설정 파일: `%APPDATA%\Claude\claude_desktop_config.json`
-
-```json
-{
-  "mcpServers": {
-    "mixamo": {
-      "command": "C:\\Tools\\mixamo-mcp.exe"
-    }
-  }
-}
 ```
-</details>
-
-<details>
-<summary>🟢 Cursor</summary>
-
-설정 파일: `%USERPROFILE%\.cursor\mcp.json`
-
-```json
-{
-  "mcpServers": {
-    "mixamo": {
-      "command": "C:\\Tools\\mixamo-mcp.exe"
-    }
-  }
-}
+https://github.com/HaD0Yun/unity-mcp-mixamo.git?path=unity-helper
 ```
-</details>
 
-<details>
-<summary>🟡 Windsurf</summary>
+또는 [Releases](https://github.com/HaD0Yun/unity-mcp-mixamo/releases)에서 `.unitypackage` 다운로드
 
-설정 파일: `%USERPROFILE%\.codeium\windsurf\mcp_config.json`
+### Step 2: MCP 설정
 
-```json
-{
-  "mcpServers": {
-    "mixamo": {
-      "command": "C:\\Tools\\mixamo-mcp.exe"
-    }
-  }
-}
-```
-</details>
+1. Unity에서 **Window > Mixamo MCP** 열기
+2. **Download & Install** 클릭 (MCP 서버 설치)
+3. 사용하는 AI 도구의 **Configure** 버튼 클릭
+4. AI 도구 재시작
 
-> ⚠️ 경로의 `\`를 `\\`로 입력!
-
-### Step 3: AI 도구 재시작
-
-### Step 4: Mixamo 토큰 설정
-
-AI에게: `mixamo-auth accessToken="토큰값"`
-
-</details>
-
----
-
-## 🔑 Mixamo 토큰 얻는 법
+### Step 3: Mixamo 토큰 설정
 
 1. [mixamo.com](https://www.mixamo.com) 로그인
 2. `F12` → Console 탭
-3. 아래 입력 후 Enter:
-   ```javascript
-   copy(localStorage.access_token)
-   ```
-4. 토큰이 클립보드에 복사됨!
+3. 입력: `copy(localStorage.access_token)`
+4. Unity 창에서 토큰 붙여넣기 후 **Save**
 
 ### ✅ 완료!
 
@@ -132,24 +61,18 @@ AI에게: `mixamo-auth accessToken="토큰값"`
 
 ## 🎬 사용법
 
-### 애니메이션 검색
+AI에게 말하기:
+
 ```
-mixamo-search keyword="run"
+mixamo-search keyword="walk"
 ```
 
-### 단일 다운로드
 ```
-mixamo-download animationIdOrName="idle" outputDir="D:/MyGame/Assets/Animations"
-```
-
-### 📦 여러 개 한번에 다운로드 (추천)
-```
-mixamo-batch animations="idle,walk,run,jump" outputDir="D:/MyGame/Assets/Animations" characterName="Player"
+mixamo-download animationIdOrName="idle" outputDir="Assets/Animations"
 ```
 
-### 키워드 목록 보기
 ```
-mixamo-keywords
+mixamo-batch animations="idle,walk,run,jump" outputDir="Assets/Animations"
 ```
 
 ---
@@ -158,41 +81,23 @@ mixamo-keywords
 
 | 카테고리 | 키워드 |
 |:--------:|--------|
-| 🚶 **이동** | `idle` `walk` `run` `jump` `crouch` `climb` `swim` |
-| ⚔️ **전투** | `attack` `punch` `kick` `sword` `block` `dodge` `death` |
-| 😀 **감정** | `wave` `bow` `clap` `cheer` `laugh` `sit` `talk` |
-| 💃 **댄스** | `dance` `hip hop` `salsa` `robot` `breakdance` |
-
-> 💡 `mixamo-keywords`로 전체 목록 확인
+| 🚶 **이동** | `idle` `walk` `run` `jump` `crouch` `climb` |
+| ⚔️ **전투** | `attack` `punch` `kick` `sword` `block` `death` |
+| 😀 **감정** | `wave` `bow` `clap` `cheer` `laugh` `talk` |
+| 💃 **댄스** | `dance` `hip hop` `salsa` `breakdance` |
 
 ---
 
-## 🎮 Unity 사용자 가이드
+## 🎮 Unity 기능
 
-### 기본 워크플로우
+### 자동 Humanoid 설정
 
-```mermaid
-graph TD
-    A[AI로 다운로드 요청] --> B[FBX 파일 저장]
-    B --> C[Unity 자동 임포트]
-    C --> D[Rig → Humanoid 설정]
-    D --> E[Animator Controller 생성]
-    E --> F[캐릭터에 적용]
-    
-    style A fill:#22c55e,color:#fff
-    style F fill:#3b82f6,color:#fff
-```
+`Animations` 또는 `Mixamo` 폴더에 FBX 드롭 시 자동으로 Humanoid 리그 설정
 
-### 자동화 원하면?
+### Animator Controller 생성
 
-**Unity Helper** 패키지 설치:
-
-```
-https://github.com/HaD0Yun/unity-mcp-mixamo.git?path=unity-helper
-```
-
-✅ FBX 임포트 시 자동 Humanoid 리그 설정  
-✅ 폴더 선택 → Tools → Mixamo Helper → Animator 자동 생성
+1. 애니메이션 폴더 선택
+2. **Tools > Mixamo Helper > Create Animator from Selected Folder**
 
 ---
 
@@ -200,46 +105,9 @@ https://github.com/HaD0Yun/unity-mcp-mixamo.git?path=unity-helper
 
 | 문제 | 해결 |
 |:-----|:-----|
-| 🔴 AI에서 도구가 안 보임 | AI 도구 완전 종료 후 재시작 |
-| 🔴 "Token expired" 에러 | mixamo.com에서 새 토큰 복사 |
-| 🔴 다운로드 실패 | 인터넷 연결 확인, 토큰 재설정 |
-| 🔴 exe 실행 안됨 | Windows Defender에서 허용 |
-
----
-
-## 🛠️ 고급 설정
-
-<details>
-<summary><b>개발자용 (소스에서 설치)</b></summary>
-
-```bash
-git clone https://github.com/HaD0Yun/unity-mcp-mixamo.git
-cd unity-mcp-mixamo/server
-pip install -e .
-```
-
-MCP 클라이언트 설정:
-```json
-{
-  "mcpServers": {
-    "mixamo": {
-      "command": "mixamo-mcp"
-    }
-  }
-}
-```
-</details>
-
-<details>
-<summary><b>exe 직접 빌드</b></summary>
-
-```bash
-cd server
-pip install pyinstaller
-python build.py
-# 결과: dist/mixamo-mcp.exe
-```
-</details>
+| Configure 버튼 비활성화 | 먼저 Download & Install 실행 |
+| AI에서 도구가 안 보임 | AI 도구 완전 종료 후 재시작 |
+| "Token expired" 에러 | mixamo.com에서 새 토큰 복사 |
 
 ---
 
@@ -250,21 +118,15 @@ unity-mcp-mixamo/
 ├── 📂 server/           # Python MCP 서버
 │   ├── 📂 dist/         # 빌드된 exe
 │   └── 📂 src/          # 소스 코드
-└── 📂 unity-helper/     # Unity 유틸리티 (선택)
+└── 📂 unity-helper/     # Unity 패키지
+    └── 📂 Editor/       # 에디터 스크립트
 ```
 
 ---
 
 ## 📜 라이센스
 
-MIT License - 자유롭게 사용하세요!
-
----
-
-## 🙏 크레딧
-
-- [Mixamo](https://www.mixamo.com) by Adobe
-- [MCP](https://modelcontextprotocol.io) by Anthropic
+MIT License
 
 ---
 

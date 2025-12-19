@@ -1,20 +1,17 @@
-# Mixamo Helper for Unity
+# Mixamo MCP for Unity
 
-Lightweight Unity Editor utilities for working with Mixamo animations. **No external dependencies** - works standalone without any MCP packages.
+AI-powered Mixamo animation downloader with one-click MCP client configuration.
 
 ## Features
 
-### Auto Humanoid Rig Setup
+### MCP Integration
+- **One-click setup** for Claude Desktop, Cursor, and Windsurf
+- **Auto-download** MCP server executable
+- **Token management** built into Unity Editor
 
-Automatically configures imported FBX files with Humanoid rig when placed in folders containing "Mixamo", "Animations", or "Animation" in the path.
-
-### Animator Controller Builder
-
-Create Animator Controllers from a folder of animation clips with:
-- Automatic state creation for each clip
-- Basic locomotion transitions (Idle ↔ Walk ↔ Run)
-- Trigger-based actions (Jump, Attack)
-- Common parameters pre-configured
+### Animation Utilities
+- **Auto Humanoid Rig** - FBX files automatically configured
+- **Animator Builder** - Create Animator Controllers from animation folders
 
 ## Installation
 
@@ -28,68 +25,47 @@ https://github.com/HaD0Yun/unity-mcp-mixamo.git?path=unity-helper
 
 Copy the `unity-helper` folder to your project's `Assets/` directory.
 
+## Quick Start
+
+1. **Window > Mixamo MCP**
+2. Click **Download & Install**
+3. Click **Configure** for your AI tool (Claude/Cursor/Windsurf)
+4. Enter your Mixamo token and click **Save**
+5. Restart your AI tool
+6. Done! Ask AI to download animations.
+
+## Getting Mixamo Token
+
+1. Go to [mixamo.com](https://www.mixamo.com) and log in
+2. Press F12 → Console tab
+3. Type: `copy(localStorage.access_token)`
+4. Paste into the Unity window
+
 ## Usage
 
-### Automatic FBX Import
+Tell your AI:
 
-1. Create a folder like `Assets/Animations/Player/`
-2. Drop Mixamo FBX files into it
-3. Files are automatically configured with Humanoid rig
-
-### Create Animator Controller
-
-1. Select a folder containing animation FBX files
-2. Go to **Tools > Mixamo Helper > Create Animator from Selected Folder**
-3. An Animator Controller is created with all animations as states
-
-### Scripting API
-
-```csharp
-using MixamoHelper;
-
-// Create Animator Controller from code
-string controllerPath = AnimatorBuilder.CreateFromFolder(
-    "Assets/Animations/Player",
-    defaultStateName: "Idle"
-);
+```
+mixamo-search keyword="run"
 ```
 
-## How It Works
+```
+mixamo-download animationIdOrName="idle" outputDir="Assets/Animations"
+```
 
-### MixamoPostprocessor
+```
+mixamo-batch animations="idle,walk,run,jump" outputDir="Assets/Animations"
+```
 
-- Intercepts FBX imports in designated folders
-- Sets `ModelImporter.animationType` to `Human`
-- Disables unnecessary imports (materials, cameras, etc.)
-- Auto-detects looping animations based on name patterns
+## Auto Humanoid Setup
 
-### AnimatorBuilder
+FBX files dropped into folders containing `Animations` or `Mixamo` are automatically configured with Humanoid rig.
 
-- Scans folder for FBX files
-- Extracts AnimationClip from each
-- Creates AnimatorController with states
-- Adds basic transitions and parameters
+## Animator Controller Builder
 
-## Folder Detection
-
-The postprocessor activates for FBX files in paths containing:
-- `Mixamo`
-- `Animations`
-- `Animation`
-
-Examples:
-- `Assets/Animations/Player/Walk.fbx` ✓
-- `Assets/Characters/Mixamo/Idle.fbx` ✓
-- `Assets/Models/Character.fbx` ✗
-
-## Loop Detection
-
-Animations are automatically set to loop based on name patterns:
-
-**Looping**: idle, walk, run, jog, sprint, crouch, crawl, swim, fly, strafe, dance
-
-**Non-looping**: jump, attack, hit, death, shoot, reload, throw, dodge, roll, land
+1. Select a folder with animation FBX files
+2. **Tools > Mixamo Helper > Create Animator from Selected Folder**
 
 ## License
 
-Apache-2.0
+MIT

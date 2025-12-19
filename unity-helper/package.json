@@ -1,16 +1,19 @@
 {
-    "name": "com.mixamohelper",
-    "version": "1.0.0",
-    "displayName": "Mixamo Helper",
-    "description": "Lightweight Unity utilities for Mixamo animations - auto Humanoid rig setup and Animator Controller generation. No external dependencies.",
+    "name": "com.mixamo.mcp",
+    "version": "3.0.0",
+    "displayName": "Mixamo MCP",
+    "description": "AI-powered Mixamo animation downloader. One-click setup for Claude Desktop, Cursor, and Windsurf. Auto Humanoid rig setup and Animator Controller generation included.",
     "unity": "2021.3",
     "unityRelease": "0f1",
-    "documentationUrl": "https://github.com/HaD0Yun/unity-mcp-mixamo#unity-helper",
+    "documentationUrl": "https://github.com/HaD0Yun/unity-mcp-mixamo",
     "keywords": [
         "mixamo",
+        "mcp",
+        "ai",
         "animation",
         "humanoid",
-        "animator"
+        "claude",
+        "cursor"
     ],
     "author": {
         "name": "HaD0Yun",
