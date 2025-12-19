@@ -156,26 +156,40 @@ class InstallerGUI:
 
     def __init__(self):
         self.installer = MixamoInstaller()
+
+        # Enable DPI awareness on Windows
+        try:
+            ctypes.windll.shcore.SetProcessDpiAwareness(1)
+        except:
+            pass
+
         self.root = tk.Tk()
         self.root.title("Mixamo MCP Installer")
-        self.root.geometry("500x550")
-        self.root.resizable(False, False)
+
+        # Set minimum size and initial size
+        self.root.minsize(500, 500)
 
         # Center window
         self.root.update_idletasks()
         x = (self.root.winfo_screenwidth() - 500) // 2
-        y = (self.root.winfo_screenheight() - 550) // 2
-        self.root.geometry(f"500x550+{x}+{y}")
+        y = (self.root.winfo_screenheight() - 500) // 2
+        self.root.geometry(f"500x500+{x}+{y}")
 
         self.setup_ui()
 
     def setup_ui(self):
         """Setup the UI."""
+        # Install button at BOTTOM first (pack order matters)
+        self.install_btn = ttk.Button(
+            self.root, text="Install", command=self.do_install
+        )
+        self.install_btn.pack(side="bottom", pady=20)
+
         # Title
         title = tk.Label(
             self.root, text="Mixamo MCP Installer", font=("Arial", 16, "bold")
         )
-        title.pack(pady=20)
+        title.pack(pady=15)
 
         # Status
         self.status_label = tk.Label(self.root, text="", font=("Arial", 10))
@@ -222,12 +236,6 @@ class InstallerGUI:
             token_frame, text="How to get token?", command=self.show_token_help
         )
         help_btn.pack(anchor="w")
-
-        # Install button
-        self.install_btn = ttk.Button(
-            self.root, text="Install", command=self.do_install
-        )
-        self.install_btn.pack(pady=20)
 
         # Update status
         if self.installer.is_installed():
