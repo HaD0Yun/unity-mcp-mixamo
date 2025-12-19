@@ -158,14 +158,14 @@ class InstallerGUI:
         self.installer = MixamoInstaller()
         self.root = tk.Tk()
         self.root.title("Mixamo MCP Installer")
-        self.root.geometry("500x480")
+        self.root.geometry("500x550")
         self.root.resizable(False, False)
 
         # Center window
         self.root.update_idletasks()
         x = (self.root.winfo_screenwidth() - 500) // 2
-        y = (self.root.winfo_screenheight() - 480) // 2
-        self.root.geometry(f"+{x}+{y}")
+        y = (self.root.winfo_screenheight() - 550) // 2
+        self.root.geometry(f"500x550+{x}+{y}")
 
         self.setup_ui()
 
