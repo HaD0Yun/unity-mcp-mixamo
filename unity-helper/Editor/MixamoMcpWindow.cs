@@ -1,9 +1,8 @@
 using System;
 using System.IO;
-using System.Net.Http;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace MixamoHelper
 {
@@ -17,10 +16,11 @@ namespace MixamoHelper
         private const string EXE_NAME = "mixamo-mcp.exe";
         
         private string _token = "";
-        private string _exePath = "";
         private bool _isDownloading = false;
+        private float _downloadProgress = 0f;
         private string _statusMessage = "";
         private MessageType _statusType = MessageType.None;
+        private UnityWebRequest _downloadRequest;
         
         // MCP Client paths
         private static string ClaudeConfigPath => Path.Combine(
@@ -53,7 +53,16 @@ namespace MixamoHelper
         private void OnEnable()
         {
             LoadToken();
-            CheckExeInstalled();
+        }
+
+        private void OnDisable()
+        {
+            if (_downloadRequest != null)
+            {
+                _downloadRequest.Dispose();
+                _downloadRequest = null;
+            }
+            EditorApplication.update -= UpdateDownload;
         }
 
         private void OnGUI()
@@ -94,7 +103,7 @@ namespace MixamoHelper
             GUILayout.FlexibleSpace();
             
             // Help link
-            if (GUILayout.Button("📖 Documentation", GUILayout.Height(25)))
+            if (GUILayout.Button("Documentation", GUILayout.Height(25)))
             {
                 Application.OpenURL("https://github.com/HaD0Yun/unity-mcp-mixamo");
             }
@@ -108,13 +117,13 @@ namespace MixamoHelper
             bool exeExists = File.Exists(ExeInstallPath);
             
             EditorGUILayout.BeginHorizontal();
-            GUILayout.Label(exeExists ? "✅ Installed" : "❌ Not Installed", 
+            GUILayout.Label(exeExists ? "Installed" : "Not Installed", 
                 exeExists ? EditorStyles.label : EditorStyles.boldLabel);
             
             GUI.enabled = !_isDownloading;
             if (GUILayout.Button(exeExists ? "Reinstall" : "Download & Install", GUILayout.Width(120)))
             {
-                DownloadAndInstallExe();
+                StartDownload();
             }
             GUI.enabled = true;
             EditorGUILayout.EndHorizontal();
@@ -126,7 +135,7 @@ namespace MixamoHelper
             
             if (_isDownloading)
             {
-                EditorGUILayout.HelpBox("Downloading...", MessageType.Info);
+                EditorGUI.ProgressBar(EditorGUILayout.GetControlRect(GUILayout.Height(20)), _downloadProgress, "Downloading...");
             }
             
             EditorGUILayout.EndVertical();
@@ -149,9 +158,7 @@ namespace MixamoHelper
         {
             EditorGUILayout.BeginHorizontal();
             
-            // Status icon
-            string status = isInstalled ? "✅" : "⚪";
-            string label = isInstalled ? $"{status} {clientName}" : $"{status} {clientName} (not detected)";
+            string label = isInstalled ? clientName : $"{clientName} (not detected)";
             GUILayout.Label(label, GUILayout.Width(200));
             
             GUI.enabled = isInstalled && File.Exists(ExeInstallPath);
@@ -190,48 +197,47 @@ namespace MixamoHelper
 
         private bool IsClaudeInstalled()
         {
-            return Directory.Exists(Path.GetDirectoryName(ClaudeConfigPath));
+            var dir = Path.GetDirectoryName(ClaudeConfigPath);
+            return !string.IsNullOrEmpty(dir) && Directory.Exists(dir);
         }
 
         private bool IsCursorInstalled()
         {
-            return Directory.Exists(Path.GetDirectoryName(CursorConfigPath));
+            var dir = Path.GetDirectoryName(CursorConfigPath);
+            return !string.IsNullOrEmpty(dir) && Directory.Exists(dir);
         }
 
         private bool IsWindsurfInstalled()
         {
             var parentDir = Path.GetDirectoryName(WindsurfConfigPath);
-            return parentDir != null && Directory.Exists(Path.GetDirectoryName(parentDir));
+            if (string.IsNullOrEmpty(parentDir)) return false;
+            var grandparentDir = Path.GetDirectoryName(parentDir);
+            return !string.IsNullOrEmpty(grandparentDir) && Directory.Exists(grandparentDir);
         }
 
         private void ConfigureClient(string clientName, string configPath)
         {
             try
             {
-                // Ensure directory exists
                 var dir = Path.GetDirectoryName(configPath);
                 if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
                 {
                     Directory.CreateDirectory(dir);
                 }
 
-                // Read existing config or create new
                 string configJson = "{}";
                 if (File.Exists(configPath))
                 {
                     configJson = File.ReadAllText(configPath);
                 }
 
-                // Parse and modify JSON (simple approach without external JSON library)
                 string exePathEscaped = ExeInstallPath.Replace("\\", "\\\\");
                 string mcpServerEntry = $"\"mixamo\": {{\"command\": \"{exePathEscaped}\"}}";
 
                 if (configJson.Contains("\"mcpServers\""))
                 {
-                    // Add to existing mcpServers
                     if (configJson.Contains("\"mixamo\""))
                     {
-                        // Already configured - update it
                         int mixamoStart = configJson.IndexOf("\"mixamo\"");
                         int braceStart = configJson.IndexOf("{", mixamoStart);
                         int braceEnd = FindMatchingBrace(configJson, braceStart);
@@ -244,7 +250,6 @@ namespace MixamoHelper
                     }
                     else
                     {
-                        // Add new entry
                         int serversStart = configJson.IndexOf("\"mcpServers\"");
                         int braceStart = configJson.IndexOf("{", serversStart);
                         if (braceStart >= 0)
@@ -258,14 +263,12 @@ namespace MixamoHelper
                 }
                 else
                 {
-                    // Create new mcpServers section
                     if (configJson.Trim() == "{}" || string.IsNullOrWhiteSpace(configJson))
                     {
-                        configJson = $"{{\n  \"mcpServers\": {{\n    {mcpServerEntry}\n  }}\n}}";
+                        configJson = "{\n  \"mcpServers\": {\n    " + mcpServerEntry + "\n  }\n}";
                     }
                     else
                     {
-                        // Add to existing config
                         int lastBrace = configJson.LastIndexOf("}");
                         if (lastBrace > 0)
                         {
@@ -274,20 +277,20 @@ namespace MixamoHelper
                             {
                                 before += ",";
                             }
-                            configJson = before + $"\n  \"mcpServers\": {{\n    {mcpServerEntry}\n  }}\n}}";
+                            configJson = before + "\n  \"mcpServers\": {\n    " + mcpServerEntry + "\n  }\n}";
                         }
                     }
                 }
 
                 File.WriteAllText(configPath, configJson);
                 
-                SetStatus($"✅ {clientName} configured successfully!\nPlease restart {clientName}.", MessageType.Info);
-                Debug.Log($"[Mixamo MCP] {clientName} configured: {configPath}");
+                SetStatus(clientName + " configured! Please restart " + clientName + ".", MessageType.Info);
+                Debug.Log("[Mixamo MCP] " + clientName + " configured: " + configPath);
             }
             catch (Exception e)
             {
-                SetStatus($"❌ Failed to configure {clientName}: {e.Message}", MessageType.Error);
-                Debug.LogError($"[Mixamo MCP] Failed to configure {clientName}: {e}");
+                SetStatus("Failed to configure " + clientName + ": " + e.Message, MessageType.Error);
+                Debug.LogError("[Mixamo MCP] Failed to configure " + clientName + ": " + e);
             }
         }
 
@@ -304,44 +307,68 @@ namespace MixamoHelper
             return -1;
         }
 
-        private async void DownloadAndInstallExe()
+        private void StartDownload()
         {
+            var dir = Path.GetDirectoryName(ExeInstallPath);
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
             _isDownloading = true;
-            SetStatus("Downloading mixamo-mcp.exe...", MessageType.Info);
+            _downloadProgress = 0f;
+            SetStatus("Starting download...", MessageType.Info);
+            
+            _downloadRequest = UnityWebRequest.Get(GITHUB_RELEASE_URL);
+            _downloadRequest.SendWebRequest();
+            
+            EditorApplication.update += UpdateDownload;
+        }
+
+        private void UpdateDownload()
+        {
+            if (_downloadRequest == null)
+            {
+                EditorApplication.update -= UpdateDownload;
+                return;
+            }
+
+            _downloadProgress = _downloadRequest.downloadProgress;
             Repaint();
 
-            try
+            if (!_downloadRequest.isDone)
             {
-                // Ensure directory exists
-                var dir = Path.GetDirectoryName(ExeInstallPath);
-                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-                {
-                    Directory.CreateDirectory(dir);
-                }
+                return;
+            }
 
-                using (var client = new HttpClient())
-                {
-                    client.Timeout = TimeSpan.FromMinutes(5);
-                    var response = await client.GetAsync(GITHUB_RELEASE_URL);
-                    response.EnsureSuccessStatusCode();
-                    
-                    var bytes = await response.Content.ReadAsByteArrayAsync();
-                    File.WriteAllBytes(ExeInstallPath, bytes);
-                }
+            EditorApplication.update -= UpdateDownload;
+            _isDownloading = false;
 
-                SetStatus("✅ Downloaded and installed successfully!", MessageType.Info);
-                Debug.Log($"[Mixamo MCP] Installed to: {ExeInstallPath}");
-            }
-            catch (Exception e)
+#if UNITY_2020_1_OR_NEWER
+            if (_downloadRequest.result == UnityWebRequest.Result.Success)
+#else
+            if (!_downloadRequest.isNetworkError && !_downloadRequest.isHttpError)
+#endif
             {
-                SetStatus($"❌ Download failed: {e.Message}", MessageType.Error);
-                Debug.LogError($"[Mixamo MCP] Download failed: {e}");
+                try
+                {
+                    File.WriteAllBytes(ExeInstallPath, _downloadRequest.downloadHandler.data);
+                    SetStatus("Downloaded and installed successfully!", MessageType.Info);
+                    Debug.Log("[Mixamo MCP] Installed to: " + ExeInstallPath);
+                }
+                catch (Exception e)
+                {
+                    SetStatus("Failed to save file: " + e.Message, MessageType.Error);
+                }
             }
-            finally
+            else
             {
-                _isDownloading = false;
-                Repaint();
+                SetStatus("Download failed: " + _downloadRequest.error, MessageType.Error);
             }
+
+            _downloadRequest.Dispose();
+            _downloadRequest = null;
+            Repaint();
         }
 
         private void LoadToken()
@@ -361,17 +388,12 @@ namespace MixamoHelper
             try
             {
                 File.WriteAllText(TokenFilePath, _token.Trim());
-                SetStatus("✅ Token saved!", MessageType.Info);
+                SetStatus("Token saved!", MessageType.Info);
             }
             catch (Exception e)
             {
-                SetStatus($"❌ Failed to save token: {e.Message}", MessageType.Error);
+                SetStatus("Failed to save token: " + e.Message, MessageType.Error);
             }
-        }
-
-        private void CheckExeInstalled()
-        {
-            _exePath = File.Exists(ExeInstallPath) ? ExeInstallPath : "";
         }
 
         private void ShowTokenHelp()
