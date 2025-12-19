@@ -17,26 +17,32 @@
 
 ---
 
-## 원클릭 설치
+## 설치 (Git URL)
 
-### Step 1: Unity 패키지 설치
+### Step 1: Package Manager에서 설치
 
-[**MixamoMCP.unitypackage 다운로드**](https://github.com/HaD0Yun/unity-mcp-mixamo/releases/latest)
+1. Unity에서 **Window > Package Manager** 열기
+2. 좌측 상단 **+** 버튼 클릭
+3. **Add package from git URL...** 선택
+4. 아래 URL 붙여넣기:
 
-> `.unitypackage` 파일을 더블클릭하거나 Unity 프로젝트에 드래그하세요.
+```
+https://github.com/HaD0Yun/unity-mcp-mixamo.git?path=unity-helper
+```
+
+5. **Add** 클릭
 
 ---
 
-### Step 2: 자동 설정 완료!
+### Step 2: 자동 설정
 
-**Import 즉시 자동으로:**
+설치 즉시 자동으로:
 
-- MCP 서버 (`mixamo-mcp.exe`) 자동 다운로드  
-- AI 도구 설정 파일 자동 구성  
-- Unity Editor 메뉴 자동 등록
+- MCP 서버 다운로드 (`mixamo-mcp.exe`)
+- Claude Desktop 설정 자동 구성
+- 설정 창 자동 열림
 
-> 처음 Import 시 자동 설치 마법사가 실행됩니다.  
-> **설치 후 AI 도구(Claude Desktop 등)를 재시작하세요!**
+> **설치 후 Claude Desktop을 재시작하세요!**
 
 ---
 
@@ -70,10 +76,9 @@ copy(localStorage.access_token)
 
 자동 설치가 안 될 경우:
 
-1. [ZIP 다운로드](https://github.com/HaD0Yun/unity-mcp-mixamo/releases/latest/download/MixamoMcp-Unity.zip)
-2. 압축 해제 후 `MixamoMcp` 폴더를 `Assets/`에 복사
-3. **Window > Mixamo MCP** → **Download & Install** 클릭
-4. 사용할 AI 도구의 **Configure** 버튼 클릭
+1. **Window > Mixamo MCP** 열기
+2. **Download & Install** 버튼 클릭
+3. 사용할 AI 도구의 **Configure** 버튼 클릭
 
 ---
 
@@ -112,14 +117,11 @@ copy(localStorage.access_token)
 ## 설치 구조
 
 ```
-%LOCALAPPDATA%/Programs/MixamoMCP/
+%LOCALAPPDATA%/MixamoMCP/
 └── mixamo-mcp.exe          ← MCP 서버 (자동 다운로드)
 
 %APPDATA%/Claude/
 └── claude_desktop_config.json  ← 자동 구성
-
-%USERPROFILE%/.cursor/
-└── mcp.json                ← 자동 구성
 ```
 
 ---
@@ -132,6 +134,7 @@ copy(localStorage.access_token)
 | AI에서 mixamo 도구가 안 보임 | AI 도구 완전히 종료 후 재시작 |
 | "Token expired" 에러 | mixamo.com에서 새 토큰 복사 |
 | 다운로드 실패 | 방화벽/VPN 확인, GitHub 접근 가능한지 확인 |
+| 재설치 필요 | Window > Mixamo MCP > Reset Installation |
 
 ---
 
