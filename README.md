@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎭 Mixamo MCP
+# Mixamo MCP
 
 ### AI로 Mixamo 애니메이션을 자동 다운로드
 
@@ -17,11 +17,11 @@
 
 ---
 
-## ⚡ 원클릭 설치
+## 원클릭 설치
 
 ### Step 1: Unity 패키지 설치
 
-[**📥 MixamoMCP.unitypackage 다운로드**](https://github.com/HaD0Yun/unity-mcp-mixamo/releases/latest)
+[**MixamoMCP.unitypackage 다운로드**](https://github.com/HaD0Yun/unity-mcp-mixamo/releases/latest)
 
 > `.unitypackage` 파일을 더블클릭하거나 Unity 프로젝트에 드래그하세요.
 
@@ -31,12 +31,12 @@
 
 **Import 즉시 자동으로:**
 
-✅ MCP 서버 (`mixamo-mcp.exe`) 자동 다운로드  
-✅ AI 도구 설정 파일 자동 구성  
-✅ Unity Editor 메뉴 자동 등록
+- MCP 서버 (`mixamo-mcp.exe`) 자동 다운로드  
+- AI 도구 설정 파일 자동 구성  
+- Unity Editor 메뉴 자동 등록
 
-> 🔄 처음 Import 시 자동 설치 마법사가 실행됩니다.  
-> ⚠️ **설치 후 AI 도구(Claude Desktop 등)를 재시작하세요!**
+> 처음 Import 시 자동 설치 마법사가 실행됩니다.  
+> **설치 후 AI 도구(Claude Desktop 등)를 재시작하세요!**
 
 ---
 
@@ -52,7 +52,7 @@ copy(localStorage.access_token)
 
 ---
 
-### ✅ 설치 완료!
+### 설치 완료!
 
 이제 AI에게 말하세요:
 
@@ -66,7 +66,7 @@ copy(localStorage.access_token)
 
 ---
 
-## 🛠️ 수동 설치 (선택사항)
+## 수동 설치 (선택사항)
 
 자동 설치가 안 될 경우:
 
@@ -77,7 +77,7 @@ copy(localStorage.access_token)
 
 ---
 
-## 🎬 MCP 명령어
+## MCP 명령어
 
 | 명령어 | 설명 | 예시 |
 |:-------|:-----|:-----|
@@ -87,18 +87,18 @@ copy(localStorage.access_token)
 
 ---
 
-## 🏷️ 지원 키워드
+## 지원 키워드
 
 | 카테고리 | 키워드 |
 |:--------:|--------|
-| 🚶 **이동** | `idle` `walk` `run` `jump` `crouch` `climb` |
-| ⚔️ **전투** | `attack` `punch` `kick` `sword` `block` `death` |
-| 😀 **감정** | `wave` `bow` `clap` `cheer` `laugh` `talk` |
-| 💃 **댄스** | `dance` `hip hop` `salsa` `breakdance` |
+| **이동** | `idle` `walk` `run` `jump` `crouch` `climb` |
+| **전투** | `attack` `punch` `kick` `sword` `block` `death` |
+| **감정** | `wave` `bow` `clap` `cheer` `laugh` `talk` |
+| **댄스** | `dance` `hip hop` `salsa` `breakdance` |
 
 ---
 
-## 🎮 Unity 자동화 기능
+## Unity 자동화 기능
 
 ### 자동 Humanoid 설정
 `Animations` 또는 `Mixamo` 폴더에 FBX 파일 넣으면 자동으로 Humanoid 리그 설정됨
@@ -109,7 +109,7 @@ copy(localStorage.access_token)
 
 ---
 
-## 🔧 설치 구조
+## 설치 구조
 
 ```
 %LOCALAPPDATA%/Programs/MixamoMCP/
@@ -124,7 +124,7 @@ copy(localStorage.access_token)
 
 ---
 
-## ❓ 문제 해결
+## 문제 해결
 
 | 문제 | 해결 |
 |:-----|:-----|
@@ -135,7 +135,7 @@ copy(localStorage.access_token)
 
 ---
 
-## 📜 라이센스
+## 라이센스
 
 MIT License
 
@@ -143,7 +143,7 @@ MIT License
 
 <div align="center">
 
-**⭐ 유용했다면 Star 부탁드립니다! ⭐**
+**Star 부탁드립니다!**
 
 [Issues](https://github.com/HaD0Yun/unity-mcp-mixamo/issues) · [Releases](https://github.com/HaD0Yun/unity-mcp-mixamo/releases)
 
