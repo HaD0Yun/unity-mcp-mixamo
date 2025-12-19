@@ -17,55 +17,38 @@
 
 ---
 
-## 🚀 설치 가이드
+## ⚡ 원클릭 설치
 
-### Step 1: Unity 패키지 다운로드
+### Step 1: Unity 패키지 설치
 
-[**📥 MixamoMcp-Unity.zip 다운로드**](https://github.com/HaD0Yun/unity-mcp-mixamo/releases/latest/download/MixamoMcp-Unity.zip)
+[**📥 MixamoMCP.unitypackage 다운로드**](https://github.com/HaD0Yun/unity-mcp-mixamo/releases/latest)
 
----
-
-### Step 2: Unity에 설치
-
-1. 다운로드한 ZIP 압축 해제
-2. `MixamoMcp` 폴더를 Unity 프로젝트의 `Assets/` 폴더에 드래그
-3. Unity가 자동으로 컴파일 (잠시 대기)
+> `.unitypackage` 파일을 더블클릭하거나 Unity 프로젝트에 드래그하세요.
 
 ---
 
-### Step 3: Mixamo MCP 창 열기
+### Step 2: 자동 설정 완료!
 
-1. Unity 상단 메뉴에서 **Window > Mixamo MCP** 클릭
-2. 창이 열리면 **Download & Install** 버튼 클릭
-3. 다운로드 완료되면 "Installed" 표시 확인
+**Import 즉시 자동으로:**
 
----
+✅ MCP 서버 (`mixamo-mcp.exe`) 자동 다운로드  
+✅ AI 도구 설정 파일 자동 구성  
+✅ Unity Editor 메뉴 자동 등록
 
-### Step 4: AI 도구 설정
-
-사용하는 AI 도구의 **Configure** 버튼 클릭:
-
-| AI 도구 | 버튼 |
-|:--------|:-----|
-| Claude Desktop | **Claude Desktop → Configure** |
-| Cursor | **Cursor → Configure** |
-| Windsurf | **Windsurf → Configure** |
-
-> ⚠️ Configure 후 **AI 도구를 완전히 종료했다가 다시 시작**해야 합니다!
+> 🔄 처음 Import 시 자동 설치 마법사가 실행됩니다.  
+> ⚠️ **설치 후 AI 도구(Claude Desktop 등)를 재시작하세요!**
 
 ---
 
-### Step 5: Mixamo 토큰 설정
+### Step 3: Mixamo 토큰 설정
 
-1. 브라우저에서 [mixamo.com](https://www.mixamo.com) 접속 후 로그인
-2. 키보드 `F12` 눌러서 개발자 도구 열기
-3. **Console** 탭 클릭
-4. 아래 코드 입력 후 Enter:
+1. **Window > Mixamo MCP** 메뉴 클릭
+2. 브라우저에서 [mixamo.com](https://www.mixamo.com) 로그인
+3. `F12` → Console 탭에서 실행:
 ```javascript
 copy(localStorage.access_token)
 ```
-5. Unity의 Mixamo MCP 창에서 **Token 입력창**에 붙여넣기
-6. **Save** 버튼 클릭
+4. 복사된 토큰을 창에 붙여넣고 **Save** 클릭
 
 ---
 
@@ -80,6 +63,17 @@ copy(localStorage.access_token)
 ```
 "idle, run, jump 애니메이션 한번에 다운로드"
 ```
+
+---
+
+## 🛠️ 수동 설치 (선택사항)
+
+자동 설치가 안 될 경우:
+
+1. [ZIP 다운로드](https://github.com/HaD0Yun/unity-mcp-mixamo/releases/latest/download/MixamoMcp-Unity.zip)
+2. 압축 해제 후 `MixamoMcp` 폴더를 `Assets/`에 복사
+3. **Window > Mixamo MCP** → **Download & Install** 클릭
+4. 사용할 AI 도구의 **Configure** 버튼 클릭
 
 ---
 
@@ -115,14 +109,29 @@ copy(localStorage.access_token)
 
 ---
 
+## 🔧 설치 구조
+
+```
+%LOCALAPPDATA%/Programs/MixamoMCP/
+└── mixamo-mcp.exe          ← MCP 서버 (자동 다운로드)
+
+%APPDATA%/Claude/
+└── claude_desktop_config.json  ← 자동 구성
+
+%USERPROFILE%/.cursor/
+└── mcp.json                ← 자동 구성
+```
+
+---
+
 ## ❓ 문제 해결
 
 | 문제 | 해결 |
 |:-----|:-----|
-| Window > Mixamo MCP 메뉴가 없음 | ZIP 다시 다운로드 후 Assets 폴더에 복사 |
-| Configure 버튼이 비활성화 | 먼저 Download & Install 실행 |
+| 자동 설치가 안 됨 | Window > Mixamo MCP에서 수동 설치 |
 | AI에서 mixamo 도구가 안 보임 | AI 도구 완전히 종료 후 재시작 |
 | "Token expired" 에러 | mixamo.com에서 새 토큰 복사 |
+| 다운로드 실패 | 방화벽/VPN 확인, GitHub 접근 가능한지 확인 |
 
 ---
 
