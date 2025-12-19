@@ -33,28 +33,33 @@
 
 ---
 
-## 📥 설치 (2분)
+## 📥 설치 (30초)
 
-### Step 1: 다운로드
+### 🚀 원클릭 설치 (권장)
 
 <div align="center">
 
-[<kbd> <br> 📥 **mixamo-mcp.exe** 다운로드 <br> </kbd>](https://github.com/HaD0Yun/unity-mcp-mixamo/releases/latest)
+[<kbd> <br> 📥 **MixamoMCP-Setup.exe** 다운로드 <br> </kbd>](https://github.com/HaD0Yun/unity-mcp-mixamo/releases/latest)
 
 </div>
 
-원하는 폴더에 저장 (예: `C:\Tools\mixamo-mcp.exe`)
+1. **Setup.exe 실행** - 자동으로 MCP 클라이언트 감지 (Claude Desktop, Cursor, Windsurf)
+2. **Mixamo 토큰 입력** - [토큰 얻기](#-mixamo-토큰-얻는-법) 버튼 클릭하면 안내
+3. **설치 완료!** - AI 도구 재시작하면 끝
+
+<details>
+<summary><b>🔧 수동 설치 (고급 사용자)</b></summary>
+
+### Step 1: 다운로드
+
+[mixamo-mcp.exe 다운로드](https://github.com/HaD0Yun/unity-mcp-mixamo/releases/latest) → 원하는 폴더에 저장 (예: `C:\Tools\`)
 
 ### Step 2: MCP 클라이언트 설정
 
-사용하는 AI 도구에 맞게 설정하세요:
-
 <details>
-<summary><b>🟣 Claude Desktop</b></summary>
+<summary>🟣 Claude Desktop</summary>
 
-설정 파일 열기:
-- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-- **Mac**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+설정 파일: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
@@ -68,41 +73,9 @@
 </details>
 
 <details>
-<summary><b>🟢 Cursor</b></summary>
+<summary>🟢 Cursor</summary>
 
-Settings → MCP → Add Server
-
-```json
-{
-  "mcpServers": {
-    "mixamo": {
-      "command": "C:\\Tools\\mixamo-mcp.exe"
-    }
-  }
-}
-```
-</details>
-
-<details>
-<summary><b>🔵 VS Code (Copilot MCP)</b></summary>
-
-`.vscode/mcp.json` 파일 생성:
-
-```json
-{
-  "servers": {
-    "mixamo": {
-      "command": "C:\\Tools\\mixamo-mcp.exe"
-    }
-  }
-}
-```
-</details>
-
-<details>
-<summary><b>🟡 Windsurf</b></summary>
-
-`~/.codeium/windsurf/mcp_config.json` 파일 편집:
+설정 파일: `%USERPROFILE%\.cursor\mcp.json`
 
 ```json
 {
@@ -116,9 +89,9 @@ Settings → MCP → Add Server
 </details>
 
 <details>
-<summary><b>⚪ 기타 MCP 클라이언트</b></summary>
+<summary>🟡 Windsurf</summary>
 
-대부분의 MCP 클라이언트는 비슷한 형식을 사용합니다:
+설정 파일: `%USERPROFILE%\.codeium\windsurf\mcp_config.json`
 
 ```json
 {
@@ -131,24 +104,27 @@ Settings → MCP → Add Server
 ```
 </details>
 
-> ⚠️ **주의**: 경로의 `\`를 `\\`로 입력해야 합니다!
+> ⚠️ 경로의 `\`를 `\\`로 입력!
 
 ### Step 3: AI 도구 재시작
 
-완전히 종료 후 다시 실행.
-
 ### Step 4: Mixamo 토큰 설정
+
+AI에게: `mixamo-auth accessToken="토큰값"`
+
+</details>
+
+---
+
+## 🔑 Mixamo 토큰 얻는 법
 
 1. [mixamo.com](https://www.mixamo.com) 로그인
 2. `F12` → Console 탭
-3. 아래 명령어 입력 (토큰이 클립보드에 복사됨):
+3. 아래 입력 후 Enter:
    ```javascript
    copy(localStorage.access_token)
    ```
-4. AI에게 말하기:
-   ```
-   mixamo-auth accessToken="여기에_붙여넣기"
-   ```
+4. 토큰이 클립보드에 복사됨!
 
 ### ✅ 완료!
 

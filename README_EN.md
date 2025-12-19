@@ -33,28 +33,33 @@ Works with **Claude Desktop • Cursor • VS Code • Windsurf** and all MCP cl
 
 ---
 
-## 📥 Installation (2 min)
+## 📥 Installation (30 seconds)
 
-### Step 1: Download
+### 🚀 One-Click Install (Recommended)
 
 <div align="center">
 
-[<kbd> <br> 📥 **Download mixamo-mcp.exe** <br> </kbd>](https://github.com/HaD0Yun/unity-mcp-mixamo/releases/latest)
+[<kbd> <br> 📥 **Download MixamoMCP-Setup.exe** <br> </kbd>](https://github.com/HaD0Yun/unity-mcp-mixamo/releases/latest)
 
 </div>
 
-Save to any folder (e.g., `C:\Tools\mixamo-mcp.exe`)
+1. **Run Setup.exe** - Auto-detects your MCP clients (Claude Desktop, Cursor, Windsurf)
+2. **Enter Mixamo Token** - Click [Get Token](#-how-to-get-mixamo-token) for instructions
+3. **Done!** - Restart your AI tool
+
+<details>
+<summary><b>🔧 Manual Installation (Advanced)</b></summary>
+
+### Step 1: Download
+
+[Download mixamo-mcp.exe](https://github.com/HaD0Yun/unity-mcp-mixamo/releases/latest) → Save to any folder (e.g., `C:\Tools\`)
 
 ### Step 2: Configure Your MCP Client
 
-Choose your AI tool:
-
 <details>
-<summary><b>🟣 Claude Desktop</b></summary>
+<summary>🟣 Claude Desktop</summary>
 
-Open config file:
-- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-- **Mac**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+Config file: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
@@ -68,41 +73,9 @@ Open config file:
 </details>
 
 <details>
-<summary><b>🟢 Cursor</b></summary>
+<summary>🟢 Cursor</summary>
 
-Settings → MCP → Add Server
-
-```json
-{
-  "mcpServers": {
-    "mixamo": {
-      "command": "C:\\Tools\\mixamo-mcp.exe"
-    }
-  }
-}
-```
-</details>
-
-<details>
-<summary><b>🔵 VS Code (Copilot MCP)</b></summary>
-
-Create `.vscode/mcp.json`:
-
-```json
-{
-  "servers": {
-    "mixamo": {
-      "command": "C:\\Tools\\mixamo-mcp.exe"
-    }
-  }
-}
-```
-</details>
-
-<details>
-<summary><b>🟡 Windsurf</b></summary>
-
-Edit `~/.codeium/windsurf/mcp_config.json`:
+Config file: `%USERPROFILE%\.cursor\mcp.json`
 
 ```json
 {
@@ -116,9 +89,9 @@ Edit `~/.codeium/windsurf/mcp_config.json`:
 </details>
 
 <details>
-<summary><b>⚪ Other MCP Clients</b></summary>
+<summary>🟡 Windsurf</summary>
 
-Most MCP clients use a similar format:
+Config file: `%USERPROFILE%\.codeium\windsurf\mcp_config.json`
 
 ```json
 {
@@ -131,24 +104,27 @@ Most MCP clients use a similar format:
 ```
 </details>
 
-> ⚠️ **Note**: Use `\\` for backslashes in paths!
+> ⚠️ Use `\\` for backslashes in paths!
 
 ### Step 3: Restart Your AI Tool
 
-Fully quit and relaunch.
-
 ### Step 4: Set Mixamo Token
+
+Tell your AI: `mixamo-auth accessToken="your_token"`
+
+</details>
+
+---
+
+## 🔑 How to Get Mixamo Token
 
 1. Log in to [mixamo.com](https://www.mixamo.com)
 2. Press `F12` → Console tab
-3. Run this command (copies token to clipboard):
+3. Type and press Enter:
    ```javascript
    copy(localStorage.access_token)
    ```
-4. Tell your AI:
-   ```
-   mixamo-auth accessToken="paste_here"
-   ```
+4. Token is now in your clipboard!
 
 ### ✅ Done!
 
