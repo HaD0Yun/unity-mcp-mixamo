@@ -17,67 +17,85 @@
 
 ---
 
-## ✨ 특징
+## 🚀 신규 유저 설치 가이드
 
-| | 기능 | 설명 |
-|:---:|:---|:---|
-| 🚀 | **원클릭 설정** | Unity 에디터에서 Configure 버튼만 클릭 |
-| 🤖 | **AI 통합** | 자연어로 애니메이션 요청 |
-| 📦 | **배치 다운로드** | 여러 애니메이션 한번에 다운로드 |
-| 🎮 | **Unity 자동화** | FBX Humanoid 자동 설정 |
-| 🔌 | **범용 MCP** | 모든 MCP 클라이언트 호환 |
+### Step 1: Unity Package Manager에서 설치
 
----
-
-## 📥 설치 (1분)
-
-### Step 1: Unity 패키지 설치
-
-**Package Manager (Git URL):**
+1. Unity 열기
+2. 상단 메뉴 **Window > Package Manager** 클릭
+3. 좌측 상단 **+** 버튼 클릭
+4. **Add package from git URL...** 선택
+5. 아래 URL 복사해서 붙여넣기:
 
 ```
 https://github.com/HaD0Yun/unity-mcp-mixamo.git?path=unity-helper
 ```
 
-또는 [Releases](https://github.com/HaD0Yun/unity-mcp-mixamo/releases)에서 `.unitypackage` 다운로드
-
-### Step 2: MCP 설정
-
-1. Unity에서 **Window > Mixamo MCP** 열기
-2. **Download & Install** 클릭 (MCP 서버 설치)
-3. 사용하는 AI 도구의 **Configure** 버튼 클릭
-4. AI 도구 재시작
-
-### Step 3: Mixamo 토큰 설정
-
-1. [mixamo.com](https://www.mixamo.com) 로그인
-2. `F12` → Console 탭
-3. 입력: `copy(localStorage.access_token)`
-4. Unity 창에서 토큰 붙여넣기 후 **Save**
-
-### ✅ 완료!
+6. **Add** 버튼 클릭하고 설치 완료될 때까지 대기
 
 ---
 
-## 🎬 사용법
+### Step 2: Mixamo MCP 창 열기
 
-AI에게 말하기:
+1. Unity 상단 메뉴에서 **Window > Mixamo MCP** 클릭
+2. 창이 열리면 **Download & Install** 버튼 클릭
+3. 다운로드 완료되면 "✅ Installed" 표시 확인
+
+---
+
+### Step 3: AI 도구 설정 (하나만 선택)
+
+사용하는 AI 도구의 **Configure** 버튼 클릭:
+
+| AI 도구 | 버튼 |
+|:--------|:-----|
+| Claude Desktop | **Claude Desktop → Configure** |
+| Cursor | **Cursor → Configure** |
+| Windsurf | **Windsurf → Configure** |
+
+> ⚠️ Configure 후 **AI 도구를 완전히 종료했다가 다시 시작**해야 합니다!
+
+---
+
+### Step 4: Mixamo 토큰 설정
+
+1. 브라우저에서 [mixamo.com](https://www.mixamo.com) 접속 후 로그인
+2. 키보드 `F12` 눌러서 개발자 도구 열기
+3. **Console** 탭 클릭
+4. 아래 코드 입력 후 Enter:
+```javascript
+copy(localStorage.access_token)
+```
+5. Unity의 Mixamo MCP 창에서 **Token 입력창**에 붙여넣기
+6. **Save** 버튼 클릭
+
+---
+
+### ✅ 설치 완료!
+
+이제 AI에게 말하세요:
 
 ```
-mixamo-search keyword="walk"
+"walk 애니메이션 다운로드해줘"
 ```
 
 ```
-mixamo-download animationIdOrName="idle" outputDir="Assets/Animations"
-```
-
-```
-mixamo-batch animations="idle,walk,run,jump" outputDir="Assets/Animations"
+"idle, run, jump 애니메이션 한번에 다운로드"
 ```
 
 ---
 
-## 🏷️ 애니메이션 키워드
+## 🎬 MCP 명령어
+
+| 명령어 | 설명 | 예시 |
+|:-------|:-----|:-----|
+| `mixamo-search` | 애니메이션 검색 | `mixamo-search keyword="walk"` |
+| `mixamo-download` | 단일 다운로드 | `mixamo-download animationIdOrName="idle"` |
+| `mixamo-batch` | 배치 다운로드 | `mixamo-batch animations="idle,walk,run"` |
+
+---
+
+## 🏷️ 지원 키워드
 
 | 카테고리 | 키워드 |
 |:--------:|--------|
@@ -88,14 +106,12 @@ mixamo-batch animations="idle,walk,run,jump" outputDir="Assets/Animations"
 
 ---
 
-## 🎮 Unity 기능
+## 🎮 Unity 자동화 기능
 
 ### 자동 Humanoid 설정
-
-`Animations` 또는 `Mixamo` 폴더에 FBX 드롭 시 자동으로 Humanoid 리그 설정
+`Animations` 또는 `Mixamo` 폴더에 FBX 파일 넣으면 자동으로 Humanoid 리그 설정됨
 
 ### Animator Controller 생성
-
 1. 애니메이션 폴더 선택
 2. **Tools > Mixamo Helper > Create Animator from Selected Folder**
 
@@ -105,22 +121,10 @@ mixamo-batch animations="idle,walk,run,jump" outputDir="Assets/Animations"
 
 | 문제 | 해결 |
 |:-----|:-----|
-| Configure 버튼 비활성화 | 먼저 Download & Install 실행 |
-| AI에서 도구가 안 보임 | AI 도구 완전 종료 후 재시작 |
+| Window > Mixamo MCP 메뉴가 없음 | Package Manager에서 패키지 제거 후 재설치 |
+| Configure 버튼이 비활성화 | 먼저 Download & Install 실행 |
+| AI에서 mixamo 도구가 안 보임 | AI 도구 완전히 종료 후 재시작 |
 | "Token expired" 에러 | mixamo.com에서 새 토큰 복사 |
-
----
-
-## 📁 프로젝트 구조
-
-```
-unity-mcp-mixamo/
-├── 📂 server/           # Python MCP 서버
-│   ├── 📂 dist/         # 빌드된 exe
-│   └── 📂 src/          # 소스 코드
-└── 📂 unity-helper/     # Unity 패키지
-    └── 📂 Editor/       # 에디터 스크립트
-```
 
 ---
 
