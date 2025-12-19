@@ -1,5 +1,6 @@
 """Mixamo MCP Server - Main entry point."""
 
+import argparse
 import asyncio
 import json
 from typing import Any
@@ -472,17 +473,104 @@ async def handle_keywords(args: dict[str, Any]) -> list[TextContent]:
     return [TextContent(type="text", text="\n".join(output_lines))]
 
 
-async def run_server():
-    """Run the MCP server."""
+async def run_stdio_server():
+    """Run the MCP server with stdio transport."""
     async with stdio_server() as (read_stream, write_stream):
         await server.run(
             read_stream, write_stream, server.create_initialization_options()
         )
 
 
+def run_sse_server(host: str, port: int):
+    """Run the MCP server with SSE transport."""
+    try:
+        from mcp.server.sse import SseServerTransport
+        from starlette.applications import Starlette
+        from starlette.routing import Mount, Route
+        from starlette.requests import Request
+        import uvicorn
+    except ImportError as e:
+        print(f"Error: SSE transport requires additional dependencies.")
+        print(f"Install with: pip install starlette uvicorn")
+        raise SystemExit(1)
+
+    sse = SseServerTransport("/messages/")
+
+    async def handle_sse(request: Request):
+        async with sse.connect_sse(
+            request.scope,
+            request.receive,
+            request._send,
+        ) as (read_stream, write_stream):
+            await server.run(
+                read_stream,
+                write_stream,
+                server.create_initialization_options(),
+            )
+
+    app = Starlette(
+        debug=False,
+        routes=[
+            Route("/sse", endpoint=handle_sse),
+            Mount("/messages/", app=sse.handle_post_message),
+        ],
+    )
+
+    print(f"")
+    print(f"╔═══════════════════════════════════════════════════════════╗")
+    print(f"║           Mixamo MCP Server (SSE Transport)               ║")
+    print(f"╠═══════════════════════════════════════════════════════════╣")
+    print(f"║  MCP Endpoint: http://{host}:{port}/sse                       ║")
+    print(f"╠═══════════════════════════════════════════════════════════╣")
+    print(f"║  Use this URL in your MCP client configuration:          ║")
+    print(f"║                                                           ║")
+    print(f"║  {{                                                        ║")
+    print(f'║    "mcpServers": {{                                        ║')
+    print(f'║      "mixamo": {{                                          ║')
+    print(f'║        "url": "http://{host}:{port}/sse"                      ║')
+    print(f"║      }}                                                     ║")
+    print(f"║    }}                                                       ║")
+    print(f"║  }}                                                         ║")
+    print(f"╚═══════════════════════════════════════════════════════════╝")
+    print(f"")
+
+    uvicorn.run(app, host=host, port=port, log_level="info")
+
+
 def main():
     """Main entry point."""
-    asyncio.run(run_server())
+    parser = argparse.ArgumentParser(
+        description="Mixamo MCP Server",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  mixamo-mcp                     # Run with stdio (default, for Claude Desktop)
+  mixamo-mcp --sse               # Run with SSE on http://localhost:8765/sse
+  mixamo-mcp --sse --port 3000   # Run with SSE on custom port
+  mixamo-mcp --sse --host 0.0.0.0 --port 8080  # Run on all interfaces
+        """,
+    )
+    parser.add_argument(
+        "--sse",
+        action="store_true",
+        help="Use SSE transport instead of stdio (exposes HTTP endpoint)",
+    )
+    parser.add_argument(
+        "--host",
+        type=str,
+        default="localhost",
+        help="Host to bind SSE server (default: localhost)",
+    )
+    parser.add_argument(
+        "--port", type=int, default=8765, help="Port for SSE server (default: 8765)"
+    )
+
+    args = parser.parse_args()
+
+    if args.sse:
+        run_sse_server(args.host, args.port)
+    else:
+        asyncio.run(run_stdio_server())
 
 
 if __name__ == "__main__":
