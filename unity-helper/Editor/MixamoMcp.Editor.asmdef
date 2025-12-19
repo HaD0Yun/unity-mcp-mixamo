@@ -1,5 +1,6 @@
 {
     "name": "MixamoMcp.Editor",
+    "rootNamespace": "MixamoMcp.Editor",
     "references": [],
     "includePlatforms": [
         "Editor"

@@ -1,6 +1,6 @@
 {
     "name": "com.mixamo.mcp",
-    "version": "3.1.0",
+    "version": "3.2.0",
     "displayName": "Mixamo MCP",
     "description": "AI-powered Mixamo animation downloader. One-click setup for Claude Desktop, Cursor, and Windsurf. Auto Humanoid rig setup and Animator Controller generation included.",
     "unity": "2021.3",
