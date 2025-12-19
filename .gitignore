@@ -74,4 +74,6 @@ Thumbs.db
 Desktop.ini
 
 # Project specific
-*.meta
+# Note: unity-helper needs .meta files, so don't ignore them there
+!unity-helper/**/*.meta
+!unity-helper/*.meta
