@@ -222,18 +222,37 @@ async def handle_config(args: dict[str, Any]) -> list[TextContent]:
     # If only show is requested or no args
     if show or (not unity_path and not char_name and not anim_subfolder):
         config = client.config
-        unity_anim_path = config.get_unity_animations_path()
+        project_info = client.get_detected_project_info()
 
-        lines = ["Current Mixamo MCP Configuration:"]
-        lines.append(f"  Unity Project: {config.unity_project_path or '(not set)'}")
+        lines = ["Mixamo MCP Status:"]
+        lines.append("")
+
+        # Show configured vs detected
+        if project_info["configured"]:
+            lines.append(
+                f"  [OK] Unity Project (configured): {project_info['configured']}"
+            )
+        elif project_info["detected"]:
+            lines.append(
+                f"  [AUTO] Unity Project (detected): {project_info['detected']}"
+            )
+        else:
+            lines.append("  [!] Unity Project: Not found")
+
         lines.append(f"  Character Name: {config.default_character_name}")
         lines.append(f"  Animations Folder: {config.animations_subfolder}")
-        if unity_anim_path:
-            lines.append(f"  Full Output Path: {unity_anim_path}")
+
+        if project_info["output_path"]:
+            lines.append(f"  Output Path: {project_info['output_path']}")
+            lines.append("")
+            lines.append('Ready! Just run: mixamo-batch animations="idle,walk,run"')
         else:
             lines.append("")
-            lines.append("Tip: Set Unity project path to auto-import animations!")
-            lines.append('Example: mixamo-config unityProjectPath="D:/MyGame"')
+            lines.append("No Unity project detected. Options:")
+            lines.append("  1. Open Unity with your project")
+            lines.append(
+                '  2. Or set manually: mixamo-config unityProjectPath="D:/MyGame"'
+            )
 
         return [TextContent(type="text", text="\n".join(lines))]
 

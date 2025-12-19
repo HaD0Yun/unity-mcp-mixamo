@@ -148,10 +148,155 @@ class MixamoClient:
         self._save_config()
 
     def get_output_dir(self, custom_dir: Optional[str] = None) -> Optional[str]:
-        """Get output directory, using Unity project if configured."""
+        """Get output directory, using Unity project if configured or auto-detected."""
         if custom_dir:
             return custom_dir
-        return self._config.get_unity_animations_path()
+
+        # Try configured path first
+        config_path = self._config.get_unity_animations_path()
+        if config_path:
+            return config_path
+
+        # Auto-detect Unity project
+        detected = self.detect_unity_project()
+        if detected:
+            return str(Path(detected) / "Assets" / self._config.animations_subfolder)
+
+        return None
+
+    def detect_unity_project(self) -> Optional[str]:
+        """Auto-detect running or recent Unity project."""
+        # Method 1: Check for running Unity (Library/EditorInstance.json exists with recent timestamp)
+        running = self._find_running_unity_project()
+        if running:
+            return running
+
+        # Method 2: Check Unity Hub recent projects
+        recent = self._get_recent_unity_projects()
+        if recent:
+            return recent[0]  # Return most recent
+
+        return None
+
+    def _find_running_unity_project(self) -> Optional[str]:
+        """Find currently running Unity project by checking lock files."""
+        import glob
+
+        # Common Unity project locations
+        search_paths = [
+            Path.home() / "Documents",
+            Path.home() / "Projects",
+            Path.home() / "Unity Projects",
+            Path("D:/"),
+            Path("C:/Users") / os.getenv("USERNAME", "") / "Documents",
+        ]
+
+        # Also check drives
+        if os.name == "nt":
+            for drive in ["C:", "D:", "E:", "F:"]:
+                drive_path = Path(drive + "/")
+                if drive_path.exists():
+                    search_paths.append(drive_path)
+
+        running_projects = []
+
+        for base_path in search_paths:
+            if not base_path.exists():
+                continue
+
+            # Look for Unity project indicators (max 3 levels deep)
+            try:
+                for depth in range(3):
+                    pattern = str(
+                        base_path / ("*/" * depth) / "Library" / "EditorInstance.json"
+                    )
+                    for editor_file in glob.glob(pattern):
+                        editor_path = Path(editor_file)
+                        project_path = editor_path.parent.parent
+
+                        # Verify it's a Unity project
+                        if (project_path / "Assets").exists():
+                            # Check if recently modified (Unity is likely running)
+                            try:
+                                mtime = editor_path.stat().st_mtime
+                                # If modified in last 5 minutes, Unity is probably running
+                                if time.time() - mtime < 300:
+                                    running_projects.append((project_path, mtime))
+                            except:
+                                pass
+            except:
+                continue
+
+        # Return most recently active project
+        if running_projects:
+            running_projects.sort(key=lambda x: x[1], reverse=True)
+            return str(running_projects[0][0])
+
+        return None
+
+    def _get_recent_unity_projects(self) -> list[str]:
+        """Get recent Unity projects from Unity Hub preferences."""
+        recent_projects = []
+
+        if os.name == "nt":
+            # Windows: Check Unity Hub preferences
+            hub_prefs = (
+                Path.home() / "AppData" / "Roaming" / "UnityHub" / "projectDir.json"
+            )
+            if hub_prefs.exists():
+                try:
+                    data = json.loads(hub_prefs.read_text())
+                    if isinstance(data, dict) and "directoryPath" in data:
+                        recent_projects.append(data["directoryPath"])
+                except:
+                    pass
+
+            # Also check Unity Editor preferences
+            prefs_path = (
+                Path.home()
+                / "AppData"
+                / "Roaming"
+                / "Unity"
+                / "Editor-5.x"
+                / "Preferences"
+            )
+            if prefs_path.exists():
+                try:
+                    for pref_file in prefs_path.glob("RecentlyUsedProjectPaths-*"):
+                        content = pref_file.read_text(errors="ignore")
+                        # Parse the binary-ish format
+                        for line in content.split("\x00"):
+                            line = line.strip()
+                            if (
+                                line
+                                and Path(line).exists()
+                                and (Path(line) / "Assets").exists()
+                            ):
+                                if line not in recent_projects:
+                                    recent_projects.append(line)
+                except:
+                    pass
+
+        # Filter to only valid Unity projects
+        valid_projects = []
+        for proj in recent_projects:
+            proj_path = Path(proj)
+            if proj_path.exists() and (proj_path / "Assets").exists():
+                valid_projects.append(str(proj_path))
+
+        return valid_projects
+
+    def get_detected_project_info(self) -> dict:
+        """Get info about detected Unity project for status display."""
+        configured = self._config.unity_project_path
+        detected = self.detect_unity_project()
+
+        return {
+            "configured": configured or None,
+            "detected": detected,
+            "active": configured or detected,
+            "output_path": self.get_output_dir(),
+        }
 
     def _get_headers(self) -> dict:
         """Get request headers."""
