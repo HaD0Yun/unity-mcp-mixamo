@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.0] - 2025-12-20
+
+### Fixed
+- **CRITICAL: Download was completely broken** - Fixed gms_hash payload construction
+  - Added `_get_animation_details()` to fetch animation info before export
+  - Added `_build_gms_hash()` to construct proper export payload
+  - Was sending `gms_hash=None` which API rejects
+  - Was using animation ID instead of name for `product_name`
+  - Monitor endpoint now correctly uses `/characters/{id}/monitor`
+- **Claude Desktop config corruption** - Replaced dangerous string manipulation with proper JSON parsing
+  - Existing MCP server configs are now preserved when adding mixamo
+- **FBX auto-import too broad** - Changed from substring match to exact folder name match
+  - Only triggers for folders named exactly "Mixamo" (not any folder containing "Animation")
+  - Added toggle: Window > Mixamo MCP > Enable FBX Auto-Config
+- **Menu path conflict** - Settings window moved to Window > Mixamo MCP > Settings
+
+### Added
+- Token validation before API calls with clear error messages
+- HTTP client cleanup on server shutdown
+- Streaming download to prevent memory issues with large FBX files
+- `error` field in SearchResult for proper error propagation
+
+### Changed
+- Better error messages guide users to authenticate first
+- Unity menu reorganized: Window > Mixamo MCP > Settings / Enable FBX Auto-Config
+
 ## [2.1.0] - 2025-12-19
 
 ### Added
