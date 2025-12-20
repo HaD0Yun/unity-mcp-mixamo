@@ -190,8 +190,21 @@ namespace MixamoMcp.Editor
         {
             EditorGUILayout.BeginHorizontal();
             
-            string label = isInstalled ? clientName : clientName + " (not detected)";
-            GUILayout.Label(label, GUILayout.Width(200));
+            // Connection status indicator
+            bool isConfigured = IsMixamoConfigured(configPath);
+            var statusColor = isConfigured ? Color.green : (isInstalled ? Color.yellow : Color.gray);
+            var prevColor = GUI.color;
+            GUI.color = statusColor;
+            GUILayout.Label("●", GUILayout.Width(15));
+            GUI.color = prevColor;
+            
+            // Client name and status
+            string statusText = isConfigured ? "Connected" : (isInstalled ? "Not configured" : "Not detected");
+            GUILayout.Label(clientName, GUILayout.Width(120));
+            
+            var statusStyle = new GUIStyle(EditorStyles.miniLabel);
+            statusStyle.normal.textColor = statusColor;
+            GUILayout.Label(statusText, statusStyle, GUILayout.Width(90));
             
             GUI.enabled = isInstalled && File.Exists(ExeInstallPath);
             if (GUILayout.Button("Configure", GUILayout.Width(80)))
@@ -201,6 +214,20 @@ namespace MixamoMcp.Editor
             GUI.enabled = true;
             
             EditorGUILayout.EndHorizontal();
+        }
+        
+        private bool IsMixamoConfigured(string configPath)
+        {
+            try
+            {
+                if (!File.Exists(configPath)) return false;
+                string content = File.ReadAllText(configPath);
+                return content.Contains("\"mixamo\"") && content.Contains("\"mcpServers\"");
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private void DrawTokenSection()
