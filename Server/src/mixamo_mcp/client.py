@@ -462,37 +462,50 @@ class MixamoClient:
         return response.json()
 
     def _build_gms_hash(self, animation_details: dict) -> list[dict]:
-        """Build gms_hash payload from animation details."""
+        """Build gms_hash payload from animation details.
+
+        Based on working implementation from gnuton/mixamo_anims_downloader:
+        - Copy original gms_hash from API response
+        - Only convert params array to comma-separated string
+        """
         gms_hash = animation_details.get("details", {}).get("gms_hash", {})
+
+        if not gms_hash:
+            # Fallback if no gms_hash in response
+            return [
+                {
+                    "model-id": 0,
+                    "mirror": False,
+                    "trim": [0, 100],
+                    "overdrive": 0,
+                    "params": "0",
+                    "arm-space": 0,
+                    "inplace": False,
+                }
+            ]
+
+        # Copy original gms_hash and only convert params to string
+        # This matches the working JS implementation:
+        # const pvals = gms_hash.params.map((param) => param[1]).join(',')
+        # const _gms_hash = Object.assign({}, gms_hash, { params: pvals })
+
+        result = dict(gms_hash)  # Copy original
 
         # Convert params array to comma-separated string
         params = gms_hash.get("params", [])
         if isinstance(params, list):
-            param_values = [
-                str(p[1]) if isinstance(p, list) else str(p) for p in params
-            ]
-            params_string = ",".join(param_values) if param_values else "0"
+            # params is array of [name, value] pairs, extract values (index 1)
+            param_values = []
+            for p in params:
+                if isinstance(p, list) and len(p) > 1:
+                    param_values.append(str(p[1]))
+                else:
+                    param_values.append(str(p) if p else "0")
+            result["params"] = ",".join(param_values) if param_values else "0"
         else:
-            params_string = str(params)
+            result["params"] = str(params) if params else "0"
 
-        # Process trim values
-        trim = gms_hash.get("trim", [0, 100])
-        if isinstance(trim, list) and len(trim) >= 2:
-            trim = [int(trim[0]), int(trim[1])]
-        else:
-            trim = [0, 100]
-
-        return [
-            {
-                "model-id": gms_hash.get("model-id", 0),
-                "mirror": gms_hash.get("mirror", False),
-                "trim": trim,
-                "overdrive": 0,
-                "params": params_string,
-                "arm-space": gms_hash.get("arm-space", 0),
-                "inplace": gms_hash.get("inplace", False),
-            }
-        ]
+        return [result]
 
     async def download(
         self,
@@ -538,21 +551,24 @@ class MixamoClient:
             gms_hash = self._build_gms_hash(animation_details)
 
             # Request export with proper gms_hash
-            # Note: Do NOT include "type" field - it causes 400 error
+            # Matches working implementation from gnuton/mixamo_anims_downloader
+            export_body = {
+                "character_id": character_id,
+                "gms_hash": gms_hash,
+                "preferences": {
+                    "format": "fbx7",
+                    "skin": "false",
+                    "fps": "30",
+                    "reducekf": "0",
+                },
+                "product_name": product_name,
+                "type": "Motion",
+            }
+
             export_response = await client.post(
                 f"{self.BASE_URL}/animations/export",
                 headers=self._get_headers(),
-                json={
-                    "character_id": character_id,
-                    "product_name": product_name,
-                    "preferences": {
-                        "format": "fbx7",
-                        "skin": "false",
-                        "fps": "30",
-                        "reducekf": "0",
-                    },
-                    "gms_hash": gms_hash,
-                },
+                json=export_body,
             )
 
             if export_response.status_code not in (200, 202):
