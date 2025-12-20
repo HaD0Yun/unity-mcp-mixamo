@@ -27,7 +27,7 @@ namespace MixamoMcp.Editor
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "MixamoMCP", EXE_NAME);
 
-        [MenuItem("Window/Mixamo MCP", priority = 1500)]
+        [MenuItem("Window/Mixamo MCP/Settings", priority = 1)]
         public static void ShowWindow()
         {
             var window = GetWindow<MixamoMcpWindow>("Mixamo MCP");
