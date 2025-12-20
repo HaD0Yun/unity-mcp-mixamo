@@ -538,13 +538,13 @@ class MixamoClient:
             gms_hash = self._build_gms_hash(animation_details)
 
             # Request export with proper gms_hash
+            # Note: Do NOT include "type" field - it causes 400 error
             export_response = await client.post(
                 f"{self.BASE_URL}/animations/export",
                 headers=self._get_headers(),
                 json={
                     "character_id": character_id,
                     "product_name": product_name,
-                    "type": animation_details.get("type", "Motion"),
                     "preferences": {
                         "format": "fbx7",
                         "skin": "false",
