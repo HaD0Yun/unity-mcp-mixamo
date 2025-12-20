@@ -19,18 +19,6 @@ namespace MixamoMcp.Editor
         private MessageType _statusType = MessageType.None;
         private UnityWebRequest _downloadRequest;
         
-        private static string ClaudeConfigPath => Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "Claude", "claude_desktop_config.json");
-        
-        private static string CursorConfigPath => Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            ".cursor", "mcp.json");
-        
-        private static string WindsurfConfigPath => Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            ".codeium", "windsurf", "mcp_config.json");
-        
         private static string TokenFilePath => Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             ".mixamo_mcp_token");
@@ -179,80 +167,25 @@ namespace MixamoMcp.Editor
             GUILayout.Label("MCP Clients", EditorStyles.boldLabel);
             GUILayout.Space(5);
             
-            DrawClientRow("Claude Desktop", ClaudeConfigPath, IsClaudeInstalled());
-            DrawClientRow("Cursor", CursorConfigPath, IsCursorInstalled());
-            DrawClientRow("Windsurf", WindsurfConfigPath, IsWindsurfInstalled());
-            
-            EditorGUILayout.EndVertical();
-        }
-
-        private void DrawClientRow(string clientName, string configPath, bool isInstalled)
-        {
             EditorGUILayout.BeginHorizontal();
             
-            // Connection status indicator
-            bool isConfigured = IsMixamoConfigured(configPath);
             bool isServerRunning = IsMcpServerRunning();
-            
-            // Determine status: Connected (green), Disconnected (yellow), Not configured (gray)
-            Color statusColor;
-            string statusText;
-            
-            if (!isInstalled)
-            {
-                statusColor = Color.gray;
-                statusText = "Not detected";
-            }
-            else if (!isConfigured)
-            {
-                statusColor = Color.gray;
-                statusText = "Not configured";
-            }
-            else if (isServerRunning)
-            {
-                statusColor = Color.green;
-                statusText = "Connected";
-            }
-            else
-            {
-                statusColor = Color.yellow;
-                statusText = "Disconnected";
-            }
+            var statusColor = isServerRunning ? Color.green : Color.yellow;
+            string statusText = isServerRunning ? "CONNECTED" : "DISCONNECTED";
             
             var prevColor = GUI.color;
             GUI.color = statusColor;
             GUILayout.Label("●", GUILayout.Width(15));
             GUI.color = prevColor;
             
-            // Client name and status
-            GUILayout.Label(clientName, GUILayout.Width(120));
-            
-            var statusStyle = new GUIStyle(EditorStyles.miniLabel);
+            var statusStyle = new GUIStyle(EditorStyles.label);
             statusStyle.normal.textColor = statusColor;
-            GUILayout.Label(statusText, statusStyle, GUILayout.Width(90));
-            
-            GUI.enabled = isInstalled && File.Exists(ExeInstallPath);
-            if (GUILayout.Button("Configure", GUILayout.Width(80)))
-            {
-                ConfigureClient(clientName, configPath);
-            }
-            GUI.enabled = true;
+            statusStyle.fontStyle = FontStyle.Bold;
+            GUILayout.Label(statusText, statusStyle);
             
             EditorGUILayout.EndHorizontal();
-        }
-        
-        private bool IsMixamoConfigured(string configPath)
-        {
-            try
-            {
-                if (!File.Exists(configPath)) return false;
-                string content = File.ReadAllText(configPath);
-                return content.Contains("\"mixamo\"") && content.Contains("\"mcpServers\"");
-            }
-            catch
-            {
-                return false;
-            }
+            
+            EditorGUILayout.EndVertical();
         }
         
         private bool IsMcpServerRunning()
@@ -290,118 +223,6 @@ namespace MixamoMcp.Editor
             EditorGUILayout.EndHorizontal();
             
             EditorGUILayout.EndVertical();
-        }
-
-        private bool IsClaudeInstalled()
-        {
-            var dir = Path.GetDirectoryName(ClaudeConfigPath);
-            return !string.IsNullOrEmpty(dir) && Directory.Exists(dir);
-        }
-
-        private bool IsCursorInstalled()
-        {
-            var dir = Path.GetDirectoryName(CursorConfigPath);
-            return !string.IsNullOrEmpty(dir) && Directory.Exists(dir);
-        }
-
-        private bool IsWindsurfInstalled()
-        {
-            var parentDir = Path.GetDirectoryName(WindsurfConfigPath);
-            if (string.IsNullOrEmpty(parentDir)) return false;
-            var grandparentDir = Path.GetDirectoryName(parentDir);
-            return !string.IsNullOrEmpty(grandparentDir) && Directory.Exists(grandparentDir);
-        }
-
-        private void ConfigureClient(string clientName, string configPath)
-        {
-            try
-            {
-                var dir = Path.GetDirectoryName(configPath);
-                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-                {
-                    Directory.CreateDirectory(dir);
-                }
-
-                string configJson = "{}";
-                if (File.Exists(configPath))
-                {
-                    configJson = File.ReadAllText(configPath);
-                }
-
-                string exePathEscaped = ExeInstallPath.Replace("\\", "\\\\");
-                string mcpServerEntry = "\"mixamo\": {\"command\": \"" + exePathEscaped + "\"}";
-
-                if (configJson.Contains("\"mcpServers\""))
-                {
-                    if (configJson.Contains("\"mixamo\""))
-                    {
-                        int mixamoStart = configJson.IndexOf("\"mixamo\"");
-                        int braceStart = configJson.IndexOf("{", mixamoStart);
-                        int braceEnd = FindMatchingBrace(configJson, braceStart);
-                        if (braceEnd > braceStart)
-                        {
-                            configJson = configJson.Substring(0, mixamoStart) + 
-                                        mcpServerEntry + 
-                                        configJson.Substring(braceEnd + 1);
-                        }
-                    }
-                    else
-                    {
-                        int serversStart = configJson.IndexOf("\"mcpServers\"");
-                        int braceStart = configJson.IndexOf("{", serversStart);
-                        if (braceStart >= 0)
-                        {
-                            string before = configJson.Substring(0, braceStart + 1);
-                            string after = configJson.Substring(braceStart + 1).TrimStart();
-                            string separator = after.StartsWith("}") ? "" : ", ";
-                            configJson = before + mcpServerEntry + separator + after;
-                        }
-                    }
-                }
-                else
-                {
-                    if (configJson.Trim() == "{}" || string.IsNullOrWhiteSpace(configJson))
-                    {
-                        configJson = "{\n  \"mcpServers\": {\n    " + mcpServerEntry + "\n  }\n}";
-                    }
-                    else
-                    {
-                        int lastBrace = configJson.LastIndexOf("}");
-                        if (lastBrace > 0)
-                        {
-                            string before = configJson.Substring(0, lastBrace).TrimEnd();
-                            if (!before.EndsWith(",") && !before.EndsWith("{"))
-                            {
-                                before += ",";
-                            }
-                            configJson = before + "\n  \"mcpServers\": {\n    " + mcpServerEntry + "\n  }\n}";
-                        }
-                    }
-                }
-
-                File.WriteAllText(configPath, configJson);
-                
-                SetStatus(clientName + " configured! Please restart " + clientName + ".", MessageType.Info);
-                Debug.Log("[Mixamo MCP] " + clientName + " configured: " + configPath);
-            }
-            catch (Exception e)
-            {
-                SetStatus("Failed to configure " + clientName + ": " + e.Message, MessageType.Error);
-                Debug.LogError("[Mixamo MCP] Failed to configure " + clientName + ": " + e);
-            }
-        }
-
-        private int FindMatchingBrace(string json, int start)
-        {
-            int depth = 0;
-            for (int i = start; i < json.Length; i++)
-            {
-                if (json[i] == '{') depth++;
-                else if (json[i] == '}') depth--;
-                
-                if (depth == 0) return i;
-            }
-            return -1;
         }
 
         private void StartDownload()
