@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using System.Diagnostics;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -192,14 +193,39 @@ namespace MixamoMcp.Editor
             
             // Connection status indicator
             bool isConfigured = IsMixamoConfigured(configPath);
-            var statusColor = isConfigured ? Color.green : (isInstalled ? Color.yellow : Color.gray);
+            bool isServerRunning = IsMcpServerRunning();
+            
+            // Determine status: Connected (green), Disconnected (yellow), Not configured (gray)
+            Color statusColor;
+            string statusText;
+            
+            if (!isInstalled)
+            {
+                statusColor = Color.gray;
+                statusText = "Not detected";
+            }
+            else if (!isConfigured)
+            {
+                statusColor = Color.gray;
+                statusText = "Not configured";
+            }
+            else if (isServerRunning)
+            {
+                statusColor = Color.green;
+                statusText = "Connected";
+            }
+            else
+            {
+                statusColor = Color.yellow;
+                statusText = "Disconnected";
+            }
+            
             var prevColor = GUI.color;
             GUI.color = statusColor;
             GUILayout.Label("●", GUILayout.Width(15));
             GUI.color = prevColor;
             
             // Client name and status
-            string statusText = isConfigured ? "Connected" : (isInstalled ? "Not configured" : "Not detected");
             GUILayout.Label(clientName, GUILayout.Width(120));
             
             var statusStyle = new GUIStyle(EditorStyles.miniLabel);
@@ -223,6 +249,19 @@ namespace MixamoMcp.Editor
                 if (!File.Exists(configPath)) return false;
                 string content = File.ReadAllText(configPath);
                 return content.Contains("\"mixamo\"") && content.Contains("\"mcpServers\"");
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        
+        private bool IsMcpServerRunning()
+        {
+            try
+            {
+                var processes = Process.GetProcessesByName("mixamo-mcp");
+                return processes.Length > 0;
             }
             catch
             {
