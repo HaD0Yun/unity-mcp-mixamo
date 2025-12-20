@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.7] - 2025-12-21
+
+### Fixed
+- **NoneType crash on API responses** - Added defensive `or {}` after all `.json()` calls
+  - Prevents `'NoneType' object has no attribute 'get'` errors
+  - Affects: character fetch, search, animation details, and monitor endpoints
+
+## [5.0.6] - 2025-12-20
+
+### Fixed
+- **NoneType crash on animation_details** - Added None check before `.get()` on animation details
+  - `(animation_details or {}).get("description", animation_name)`
+
+## [5.0.5] - 2025-12-20
+
+### Fixed
+- **400 error on export** - Corrected export preferences to match Mixamo web client
+  - Changed `format`: "fbx7" → "fbx7_2019"
+  - Changed `skin`: "false" → "true"
+  - Values captured from actual browser network request
+
 ## [5.0.4] - 2025-12-20
 
 ### Fixed

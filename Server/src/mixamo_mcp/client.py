@@ -361,7 +361,7 @@ class MixamoClient:
                 print(f"[DEBUG] Failed to get characters: {response.status_code}")
                 return None
 
-            data = response.json()
+            data = response.json() or {}
 
             # Try to get primary character ID
             primary_id = data.get("primary_character_id")
@@ -440,7 +440,7 @@ class MixamoClient:
                     continue
 
                 any_success = True
-                data = response.json()
+                data = response.json() or {}
                 results = data.get("results", [])
 
                 for item in results:
@@ -604,7 +604,7 @@ class MixamoClient:
             animation_details = await self._get_animation_details(
                 animation_id, character_id
             )
-            product_name = animation_details.get("description", animation_name)
+            product_name = (animation_details or {}).get("description", animation_name)
             gms_hash = self._build_gms_hash(animation_details)
 
             # Request export with proper gms_hash
@@ -663,7 +663,7 @@ class MixamoClient:
                 if monitor_response.status_code != 200:
                     continue
 
-                monitor_data = monitor_response.json()
+                monitor_data = monitor_response.json() or {}
                 status = monitor_data.get("status", "")
 
                 if status == "completed":
