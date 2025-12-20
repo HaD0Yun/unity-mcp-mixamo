@@ -295,6 +295,8 @@ class MixamoService:
             if not data.get("primary_character_id"):
                 raise CharacterError("No primary character selected in Mixamo.")
             return Character.from_api_response(data)
+        except AuthenticationError:
+            raise  # Let auth errors bubble up
         except MixamoError as e:
             raise CharacterError(f"Failed to get primary character: {str(e)}")
 
