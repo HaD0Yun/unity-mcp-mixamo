@@ -575,9 +575,18 @@ class MixamoClient:
                 error_detail = ""
                 try:
                     error_data = export_response.json()
-                    error_detail = f" - {error_data.get('message', error_data)}"
+                    error_detail = f" - {error_data}"
                 except:
-                    pass
+                    error_detail = f" - {export_response.text[:500]}"
+
+                # Log full request for debugging
+                import json
+
+                print(f"[DEBUG] Export failed for '{animation_name}'")
+                print(f"[DEBUG] Status: {export_response.status_code}")
+                print(f"[DEBUG] Request body: {json.dumps(export_body, indent=2)}")
+                print(f"[DEBUG] Response: {error_detail}")
+
                 return DownloadResult(
                     success=False,
                     animation_name=animation_name,
@@ -688,8 +697,9 @@ class MixamoClient:
             )
             results.append(result)
 
-            # Small delay between downloads
-            await asyncio.sleep(1)
+            # Delay between downloads to avoid 429 rate limiting
+            # Mixamo API is sensitive to rapid requests
+            await asyncio.sleep(3)
 
         successful = sum(1 for r in results if r.success)
 
