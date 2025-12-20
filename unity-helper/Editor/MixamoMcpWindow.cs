@@ -84,6 +84,8 @@ namespace MixamoMcp.Editor
 
             DrawExeSection();
             GUILayout.Space(15);
+            DrawConfigurationSection();
+            GUILayout.Space(15);
             DrawMcpClientsSection();
             GUILayout.Space(15);
             DrawTokenSection();
@@ -126,6 +128,49 @@ namespace MixamoMcp.Editor
             }
             
             EditorGUILayout.EndVertical();
+        }
+
+        private void DrawConfigurationSection()
+        {
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Label("Configuration:", EditorStyles.boldLabel);
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button("Copy", GUILayout.Width(50)))
+            {
+                string config = GetConfigJson();
+                EditorGUIUtility.systemCopyBuffer = config;
+                SetStatus("Configuration copied to clipboard!", MessageType.Info);
+            }
+            EditorGUILayout.EndHorizontal();
+            
+            GUILayout.Space(5);
+            
+            string configJson = GetConfigJson();
+            var textStyle = new GUIStyle(EditorStyles.textArea)
+            {
+                wordWrap = true,
+                fontSize = 11,
+                padding = new RectOffset(8, 8, 8, 8)
+            };
+            
+            float height = textStyle.CalcHeight(new GUIContent(configJson), EditorGUIUtility.currentViewWidth - 40);
+            EditorGUILayout.SelectableLabel(configJson, textStyle, GUILayout.Height(Mathf.Max(80, height + 10)));
+            
+            EditorGUILayout.EndVertical();
+        }
+        
+        private string GetConfigJson()
+        {
+            string exePath = ExeInstallPath.Replace("\\", "\\\\");
+            return "{\n" +
+                   "  \"mcpServers\": {\n" +
+                   "    \"mixamo\": {\n" +
+                   "      \"command\": \"" + exePath + "\"\n" +
+                   "    }\n" +
+                   "  }\n" +
+                   "}";
         }
 
         private void DrawMcpClientsSection()
