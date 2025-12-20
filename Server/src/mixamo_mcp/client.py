@@ -341,6 +341,50 @@ class MixamoClient:
         except Exception:
             return False
 
+    async def get_primary_character_id(self) -> Optional[str]:
+        """Get the user's primary character ID from Mixamo.
+
+        This is required because character IDs are account-specific.
+        The hardcoded Y-Bot ID may not work for all accounts.
+        """
+        if not self._access_token:
+            return None
+
+        try:
+            client = await self._get_client()
+            response = await client.get(
+                f"{self.BASE_URL}/characters",
+                headers=self._get_headers(),
+            )
+
+            if response.status_code != 200:
+                print(f"[DEBUG] Failed to get characters: {response.status_code}")
+                return None
+
+            data = response.json()
+
+            # Try to get primary character ID
+            primary_id = data.get("primary_character_id")
+            if primary_id:
+                print(f"[DEBUG] Found primary character: {primary_id}")
+                return primary_id
+
+            # Fallback: get first character from results
+            results = data.get("results", [])
+            if results:
+                first_char = results[0]
+                char_id = first_char.get("character_id") or first_char.get("id")
+                if char_id:
+                    print(f"[DEBUG] Using first character: {char_id}")
+                    return char_id
+
+            print("[DEBUG] No characters found in account")
+            return None
+
+        except Exception as e:
+            print(f"[DEBUG] Error getting primary character: {e}")
+            return None
+
     async def search(
         self,
         query: str,
@@ -522,6 +566,16 @@ class MixamoClient:
                 animation_name=animation_id_or_name,
                 error="Not authenticated. Please run mixamo-auth first with your access token.",
             )
+
+        # If using default character ID, try to get user's primary character
+        # This is important because character IDs are account-specific
+        if character_id == DEFAULT_CHARACTER_ID:
+            primary_char = await self.get_primary_character_id()
+            if primary_char:
+                character_id = primary_char
+                print(f"[DEBUG] Using primary character: {character_id}")
+            else:
+                print(f"[DEBUG] Using default character: {character_id}")
 
         client = await self._get_client()
 
