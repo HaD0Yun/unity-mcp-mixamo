@@ -1,6 +1,5 @@
 #if UNITY_EDITOR
 using System;
-using System.Diagnostics;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -260,7 +259,7 @@ namespace MixamoMcp.Editor
         {
             try
             {
-                var processes = Process.GetProcessesByName("mixamo-mcp");
+                var processes = System.Diagnostics.Process.GetProcessesByName("mixamo-mcp");
                 return processes.Length > 0;
             }
             catch
