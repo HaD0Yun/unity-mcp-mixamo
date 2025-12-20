@@ -512,6 +512,9 @@ class MixamoClient:
         - Copy original gms_hash from API response
         - Only convert params array to comma-separated string
         """
+        # Handle None case to avoid 'NoneType' object has no attribute 'get' error
+        if animation_details is None:
+            animation_details = {}
         gms_hash = animation_details.get("details", {}).get("gms_hash", {})
 
         if not gms_hash:

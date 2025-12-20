@@ -1,6 +1,6 @@
 {
     "name": "com.mixamo.mcp",
-    "version": "5.0.5",
+    "version": "5.0.6",
     "displayName": "Mixamo MCP",
     "description": "AI-powered Mixamo animation downloader. One-click setup for Claude Desktop, Cursor, and Windsurf. Auto Humanoid rig setup and Animator Controller generation included.",
     "unity": "2021.3",
@@ -20,3 +20,4 @@
         "url": "https://github.com/HaD0Yun"
     }
 }
+
