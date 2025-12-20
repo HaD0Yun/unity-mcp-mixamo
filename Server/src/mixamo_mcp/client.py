@@ -348,12 +348,23 @@ class MixamoClient:
         character_id: str = DEFAULT_CHARACTER_ID,
     ) -> SearchResult:
         """Search for animations."""
+        # Check authentication first
+        if not self._access_token:
+            return SearchResult(
+                query=query,
+                total=0,
+                animations=[],
+                error="Not authenticated. Please run mixamo-auth first with your access token.",
+            )
+
         client = await self._get_client()
 
         # Get search queries for the keyword
         queries = get_search_queries(query)
         all_animations: list[Animation] = []
         seen_ids: set[str] = set()
+        any_success = False
+        last_error = None
 
         for search_query in queries:
             if len(all_animations) >= limit:
@@ -372,9 +383,19 @@ class MixamoClient:
                     },
                 )
 
+                if response.status_code == 401:
+                    return SearchResult(
+                        query=query,
+                        total=0,
+                        animations=[],
+                        error="Authentication failed. Token may be expired. Please run mixamo-auth with a new token.",
+                    )
+
                 if response.status_code != 200:
+                    last_error = f"API returned status {response.status_code}"
                     continue
 
+                any_success = True
                 data = response.json()
                 results = data.get("results", [])
 
@@ -396,8 +417,19 @@ class MixamoClient:
                             break
 
             except Exception as e:
+                last_error = str(e)
                 print(f"Search error for '{search_query}': {e}")
                 continue
+
+        # If no successful responses and no results, report error
+        if not any_success and not all_animations:
+            return SearchResult(
+                query=query,
+                total=0,
+                animations=[],
+                error=last_error
+                or "All search queries failed. Check your network connection.",
+            )
 
         return SearchResult(
             query=query,
@@ -415,6 +447,53 @@ class MixamoClient:
         )
         return bool(uuid_pattern.match(value))
 
+    async def _get_animation_details(
+        self, animation_id: str, character_id: str
+    ) -> dict:
+        """Get detailed animation info including gms_hash."""
+        client = await self._get_client()
+        response = await client.get(
+            f"{self.BASE_URL}/products/{animation_id}",
+            headers=self._get_headers(),
+            params={"similar": 0, "character_id": character_id},
+        )
+        if response.status_code != 200:
+            raise Exception(f"Failed to get animation details: {response.status_code}")
+        return response.json()
+
+    def _build_gms_hash(self, animation_details: dict) -> list[dict]:
+        """Build gms_hash payload from animation details."""
+        gms_hash = animation_details.get("details", {}).get("gms_hash", {})
+
+        # Convert params array to comma-separated string
+        params = gms_hash.get("params", [])
+        if isinstance(params, list):
+            param_values = [
+                str(p[1]) if isinstance(p, list) else str(p) for p in params
+            ]
+            params_string = ",".join(param_values) if param_values else "0"
+        else:
+            params_string = str(params)
+
+        # Process trim values
+        trim = gms_hash.get("trim", [0, 100])
+        if isinstance(trim, list) and len(trim) >= 2:
+            trim = [int(trim[0]), int(trim[1])]
+        else:
+            trim = [0, 100]
+
+        return [
+            {
+                "model-id": gms_hash.get("model-id", 0),
+                "mirror": gms_hash.get("mirror", False),
+                "trim": trim,
+                "overdrive": 0,
+                "params": params_string,
+                "arm-space": gms_hash.get("arm-space", 0),
+                "inplace": gms_hash.get("inplace", False),
+            }
+        ]
+
     async def download(
         self,
         animation_id_or_name: str,
@@ -423,6 +502,14 @@ class MixamoClient:
         file_name: Optional[str] = None,
     ) -> DownloadResult:
         """Download a single animation."""
+        # Check authentication first
+        if not self._access_token:
+            return DownloadResult(
+                success=False,
+                animation_name=animation_id_or_name,
+                error="Not authenticated. Please run mixamo-auth first with your access token.",
+            )
+
         client = await self._get_client()
 
         # If it doesn't look like a UUID, search for it first
@@ -443,42 +530,52 @@ class MixamoClient:
                 )
 
         try:
-            # Request export
+            # Get animation details to build proper gms_hash
+            animation_details = await self._get_animation_details(
+                animation_id, character_id
+            )
+            product_name = animation_details.get("description", animation_name)
+            gms_hash = self._build_gms_hash(animation_details)
+
+            # Request export with proper gms_hash
             export_response = await client.post(
                 f"{self.BASE_URL}/animations/export",
                 headers=self._get_headers(),
                 json={
                     "character_id": character_id,
-                    "product_name": animation_id,
+                    "product_name": product_name,
+                    "type": animation_details.get("type", "Motion"),
                     "preferences": {
                         "format": "fbx7",
                         "skin": "false",
                         "fps": "30",
                         "reducekf": "0",
                     },
-                    "gms_hash": None,
+                    "gms_hash": gms_hash,
                 },
             )
 
             if export_response.status_code not in (200, 202):
+                error_detail = ""
+                try:
+                    error_data = export_response.json()
+                    error_detail = f" - {error_data.get('message', error_data)}"
+                except:
+                    pass
                 return DownloadResult(
                     success=False,
                     animation_name=animation_name,
-                    error=f"Export request failed: {export_response.status_code}",
+                    error=f"Export request failed: {export_response.status_code}{error_detail}",
                 )
 
-            # Poll for download URL
+            # Poll for download URL using character monitor endpoint
             download_url = None
-            for _ in range(30):  # Max 30 attempts
+            for attempt in range(30):  # Max 30 attempts (60 seconds)
                 await asyncio.sleep(2)
 
                 monitor_response = await client.get(
-                    f"{self.BASE_URL}/animations/monitor",
+                    f"{self.BASE_URL}/characters/{character_id}/monitor",
                     headers=self._get_headers(),
-                    params={
-                        "character_id": character_id,
-                        "product_name": animation_id,
-                    },
                 )
 
                 if monitor_response.status_code != 200:
@@ -491,44 +588,52 @@ class MixamoClient:
                     download_url = monitor_data.get("job_result", "")
                     break
                 elif status == "failed":
+                    error_msg = monitor_data.get(
+                        "message", "Export job failed on Mixamo server"
+                    )
                     return DownloadResult(
                         success=False,
                         animation_name=animation_name,
-                        error="Export job failed on Mixamo server",
+                        error=error_msg,
                     )
 
             if not download_url:
                 return DownloadResult(
                     success=False,
                     animation_name=animation_name,
-                    error="Timeout waiting for download URL",
+                    error="Timeout waiting for download URL (60s)",
                 )
 
-            # Download the file
-            file_response = await client.get(download_url, follow_redirects=True)
+            # Download the file with streaming to handle large files
+            async with client.stream(
+                "GET", download_url, follow_redirects=True
+            ) as response:
+                if response.status_code != 200:
+                    return DownloadResult(
+                        success=False,
+                        animation_name=animation_name,
+                        error=f"Download failed: {response.status_code}",
+                    )
 
-            if file_response.status_code != 200:
-                return DownloadResult(
-                    success=False,
-                    animation_name=animation_name,
-                    error=f"Download failed: {file_response.status_code}",
+                # Save file
+                output_path = Path(output_dir)
+                output_path.mkdir(parents=True, exist_ok=True)
+
+                safe_name = file_name or animation_name
+                safe_name = "".join(
+                    c if c.isalnum() or c in "._- " else "_" for c in safe_name
                 )
+                safe_name = safe_name.replace(" ", "_")
 
-            # Save file
-            output_path = Path(output_dir)
-            output_path.mkdir(parents=True, exist_ok=True)
+                if not safe_name.endswith(".fbx"):
+                    safe_name += ".fbx"
 
-            safe_name = file_name or animation_name
-            safe_name = "".join(
-                c if c.isalnum() or c in "._- " else "_" for c in safe_name
-            )
-            safe_name = safe_name.replace(" ", "_")
+                file_path = output_path / safe_name
 
-            if not safe_name.endswith(".fbx"):
-                safe_name += ".fbx"
-
-            file_path = output_path / safe_name
-            file_path.write_bytes(file_response.content)
+                # Stream to file to avoid memory issues with large files
+                with open(file_path, "wb") as f:
+                    async for chunk in response.aiter_bytes(chunk_size=8192):
+                        f.write(chunk)
 
             return DownloadResult(
                 success=True,

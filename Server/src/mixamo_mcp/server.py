@@ -335,7 +335,24 @@ async def handle_search(args: dict[str, Any]) -> list[TextContent]:
     if not keyword:
         return [TextContent(type="text", text="Error: keyword is required")]
 
+    # Check for authentication
+    if not client.access_token:
+        return [
+            TextContent(
+                type="text",
+                text="Error: Not authenticated.\n\nPlease run mixamo-auth first:\n"
+                "1. Go to https://www.mixamo.com and log in\n"
+                "2. Open browser DevTools (F12)\n"
+                "3. In Console, run: copy(localStorage.access_token)\n"
+                '4. Then run: mixamo-auth accessToken="YOUR_TOKEN"',
+            )
+        ]
+
     result = await client.search(keyword, limit=limit)
+
+    # Check for errors in search result
+    if result.error:
+        return [TextContent(type="text", text=f"Error: {result.error}")]
 
     output_lines = [f"Search results for '{keyword}':"]
 
@@ -364,6 +381,19 @@ async def handle_download(args: dict[str, Any]) -> list[TextContent]:
 
     if not animation:
         return [TextContent(type="text", text="Error: animationIdOrName is required")]
+
+    # Check for authentication
+    if not client.access_token:
+        return [
+            TextContent(
+                type="text",
+                text="Error: Not authenticated.\n\nPlease run mixamo-auth first:\n"
+                "1. Go to https://www.mixamo.com and log in\n"
+                "2. Open browser DevTools (F12)\n"
+                "3. In Console, run: copy(localStorage.access_token)\n"
+                '4. Then run: mixamo-auth accessToken="YOUR_TOKEN"',
+            )
+        ]
 
     # Use Unity project path if outputDir not specified
     final_output_dir = client.get_output_dir(output_dir if output_dir else None)
@@ -405,6 +435,19 @@ async def handle_batch(args: dict[str, Any]) -> list[TextContent]:
 
     if not animations_str:
         return [TextContent(type="text", text="Error: animations is required")]
+
+    # Check for authentication
+    if not client.access_token:
+        return [
+            TextContent(
+                type="text",
+                text="Error: Not authenticated.\n\nPlease run mixamo-auth first:\n"
+                "1. Go to https://www.mixamo.com and log in\n"
+                "2. Open browser DevTools (F12)\n"
+                "3. In Console, run: copy(localStorage.access_token)\n"
+                '4. Then run: mixamo-auth accessToken="YOUR_TOKEN"',
+            )
+        ]
 
     # Use Unity project path if outputDir not specified
     final_output_dir = client.get_output_dir(output_dir if output_dir else None)
@@ -474,10 +517,14 @@ async def handle_keywords(args: dict[str, Any]) -> list[TextContent]:
 
 async def run_server():
     """Run the MCP server."""
-    async with stdio_server() as (read_stream, write_stream):
-        await server.run(
-            read_stream, write_stream, server.create_initialization_options()
-        )
+    try:
+        async with stdio_server() as (read_stream, write_stream):
+            await server.run(
+                read_stream, write_stream, server.create_initialization_options()
+            )
+    finally:
+        # Ensure HTTP client is properly closed
+        await client.close()
 
 
 def main():

@@ -97,13 +97,17 @@ class SearchResult:
     query: str
     total: int
     animations: list[Animation] = field(default_factory=list)
+    error: str = ""
 
     def to_dict(self) -> dict:
-        return {
+        result = {
             "query": self.query,
             "total": self.total,
             "animations": [a.to_dict() for a in self.animations],
         }
+        if self.error:
+            result["error"] = self.error
+        return result
 
 
 # Default character IDs

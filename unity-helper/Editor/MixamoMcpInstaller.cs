@@ -141,40 +141,152 @@ namespace MixamoMcp.Editor
                     return;
                 }
 
-                string configJson = "{}";
-                if (File.Exists(ClaudeConfigPath))
-                    configJson = File.ReadAllText(ClaudeConfigPath);
-
                 string exePathEscaped = ExeInstallPath.Replace("\\", "\\\\");
-                string mcpEntry = $"\"mixamo\": {{\"command\": \"{exePathEscaped}\"}}";
-
-                if (configJson.Contains("\"mcpServers\""))
+                
+                // Parse existing config or create new one
+                ClaudeConfig config;
+                if (File.Exists(ClaudeConfigPath))
                 {
-                    if (!configJson.Contains("\"mixamo\""))
-                    {
-                        int idx = configJson.IndexOf("\"mcpServers\"");
-                        int braceIdx = configJson.IndexOf("{", idx);
-                        if (braceIdx >= 0)
-                        {
-                            string before = configJson.Substring(0, braceIdx + 1);
-                            string after = configJson.Substring(braceIdx + 1).TrimStart();
-                            string sep = after.StartsWith("}") ? "" : ", ";
-                            configJson = before + mcpEntry + sep + after;
-                        }
-                    }
+                    string existingJson = File.ReadAllText(ClaudeConfigPath);
+                    config = ParseClaudeConfig(existingJson);
                 }
                 else
                 {
-                    configJson = "{\n  \"mcpServers\": {\n    " + mcpEntry + "\n  }\n}";
+                    config = new ClaudeConfig();
                 }
-
-                File.WriteAllText(ClaudeConfigPath, configJson);
+                
+                // Add or update mixamo server entry
+                config.mcpServers["mixamo"] = new McpServerConfig { command = exePathEscaped };
+                
+                // Serialize back to JSON with proper formatting
+                string newJson = SerializeClaudeConfig(config);
+                File.WriteAllText(ClaudeConfigPath, newJson);
+                
                 Debug.Log("[Mixamo MCP] Claude Desktop configured: " + ClaudeConfigPath);
             }
             catch (Exception e)
             {
                 Debug.LogWarning("[Mixamo MCP] Could not configure Claude Desktop: " + e.Message);
             }
+        }
+        
+        /// <summary>
+        /// Simple JSON config classes for Claude Desktop configuration.
+        /// </summary>
+        [Serializable]
+        private class McpServerConfig
+        {
+            public string command;
+            public string[] args;
+        }
+        
+        private class ClaudeConfig
+        {
+            public System.Collections.Generic.Dictionary<string, McpServerConfig> mcpServers = 
+                new System.Collections.Generic.Dictionary<string, McpServerConfig>();
+        }
+        
+        /// <summary>
+        /// Parse Claude Desktop config JSON into ClaudeConfig object.
+        /// Uses simple regex-based parsing since Unity's JsonUtility doesn't support Dictionary.
+        /// </summary>
+        private static ClaudeConfig ParseClaudeConfig(string json)
+        {
+            var config = new ClaudeConfig();
+            
+            try
+            {
+                // Find mcpServers block
+                var serversMatch = System.Text.RegularExpressions.Regex.Match(
+                    json, 
+                    @"""mcpServers""\s*:\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}",
+                    System.Text.RegularExpressions.RegexOptions.Singleline);
+                
+                if (serversMatch.Success)
+                {
+                    string serversContent = serversMatch.Groups[1].Value;
+                    
+                    // Parse each server entry: "name": {"command": "...", "args": [...]}
+                    var serverPattern = new System.Text.RegularExpressions.Regex(
+                        @"""([^""]+)""\s*:\s*\{([^{}]*)\}",
+                        System.Text.RegularExpressions.RegexOptions.Singleline);
+                    
+                    foreach (System.Text.RegularExpressions.Match serverMatch in serverPattern.Matches(serversContent))
+                    {
+                        string serverName = serverMatch.Groups[1].Value;
+                        string serverBody = serverMatch.Groups[2].Value;
+                        
+                        var serverConfig = new McpServerConfig();
+                        
+                        // Extract command
+                        var cmdMatch = System.Text.RegularExpressions.Regex.Match(
+                            serverBody, @"""command""\s*:\s*""([^""\\]*(?:\\.[^""\\]*)*)""");
+                        if (cmdMatch.Success)
+                            serverConfig.command = cmdMatch.Groups[1].Value;
+                        
+                        // Extract args array
+                        var argsMatch = System.Text.RegularExpressions.Regex.Match(
+                            serverBody, @"""args""\s*:\s*\[(.*?)\]",
+                            System.Text.RegularExpressions.RegexOptions.Singleline);
+                        if (argsMatch.Success)
+                        {
+                            var argStrings = new System.Collections.Generic.List<string>();
+                            var argPattern = new System.Text.RegularExpressions.Regex(@"""([^""\\]*(?:\\.[^""\\]*)*)""");
+                            foreach (System.Text.RegularExpressions.Match argMatch in argPattern.Matches(argsMatch.Groups[1].Value))
+                            {
+                                argStrings.Add(argMatch.Groups[1].Value);
+                            }
+                            serverConfig.args = argStrings.ToArray();
+                        }
+                        
+                        config.mcpServers[serverName] = serverConfig;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("[Mixamo MCP] Error parsing existing config, creating new: " + e.Message);
+            }
+            
+            return config;
+        }
+        
+        /// <summary>
+        /// Serialize ClaudeConfig to JSON string with proper formatting.
+        /// </summary>
+        private static string SerializeClaudeConfig(ClaudeConfig config)
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("{");
+            sb.AppendLine("  \"mcpServers\": {");
+            
+            var serverEntries = new System.Collections.Generic.List<string>();
+            foreach (var kvp in config.mcpServers)
+            {
+                var entry = new System.Text.StringBuilder();
+                entry.Append($"    \"{kvp.Key}\": {{");
+                entry.Append($"\"command\": \"{kvp.Value.command}\"");
+                
+                if (kvp.Value.args != null && kvp.Value.args.Length > 0)
+                {
+                    entry.Append(", \"args\": [");
+                    for (int i = 0; i < kvp.Value.args.Length; i++)
+                    {
+                        if (i > 0) entry.Append(", ");
+                        entry.Append($"\"{kvp.Value.args[i]}\"");
+                    }
+                    entry.Append("]");
+                }
+                
+                entry.Append("}");
+                serverEntries.Add(entry.ToString());
+            }
+            
+            sb.AppendLine(string.Join(",\n", serverEntries));
+            sb.AppendLine("  }");
+            sb.Append("}");
+            
+            return sb.ToString();
         }
 
         private static void ShowWelcomeDialog(bool alreadyInstalled)

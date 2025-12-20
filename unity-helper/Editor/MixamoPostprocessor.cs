@@ -1,21 +1,55 @@
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
+using System.IO;
 
 namespace MixamoMcp.Editor
 {
+    /// <summary>
+    /// Auto-configures FBX files from Mixamo with Humanoid rig and loop settings.
+    /// Only triggers for FBX files in folders explicitly named "Mixamo" to avoid
+    /// accidentally modifying other animation files.
+    /// </summary>
     public class MixamoPostprocessor : AssetPostprocessor
     {
-        private static readonly string[] MixamoFolderPatterns = new[]
+        // EditorPrefs key to enable/disable auto-processing
+        private const string ENABLED_KEY = "MixamoMcp_PostprocessorEnabled";
+        
+        // Only match folders explicitly named "Mixamo" (case-insensitive)
+        // This prevents accidentally processing unrelated FBX files
+        private static readonly string[] ExactFolderNames = new[]
         {
             "Mixamo",
-            "Animations",
-            "Animation"
+            "MixamoAnimations",
+            "Mixamo_Animations"
         };
+
+        /// <summary>
+        /// Check if Mixamo postprocessor is enabled (default: true)
+        /// </summary>
+        public static bool IsEnabled
+        {
+            get => EditorPrefs.GetBool(ENABLED_KEY, true);
+            set => EditorPrefs.SetBool(ENABLED_KEY, value);
+        }
+
+        [MenuItem("Window/Mixamo MCP/Enable FBX Auto-Config", true)]
+        private static bool ValidateEnableAutoConfig()
+        {
+            Menu.SetChecked("Window/Mixamo MCP/Enable FBX Auto-Config", IsEnabled);
+            return true;
+        }
+
+        [MenuItem("Window/Mixamo MCP/Enable FBX Auto-Config", false, 100)]
+        private static void ToggleAutoConfig()
+        {
+            IsEnabled = !IsEnabled;
+            Debug.Log("[MixamoHelper] FBX Auto-Config " + (IsEnabled ? "enabled" : "disabled"));
+        }
 
         void OnPreprocessModel()
         {
-            if (!IsMixamoAnimation(assetPath))
+            if (!IsEnabled || !IsMixamoAnimation(assetPath))
                 return;
 
             ModelImporter importer = assetImporter as ModelImporter;
@@ -38,13 +72,13 @@ namespace MixamoMcp.Editor
 
         void OnPostprocessModel(GameObject go)
         {
-            if (!IsMixamoAnimation(assetPath))
+            if (!IsEnabled || !IsMixamoAnimation(assetPath))
                 return;
         }
 
         void OnPostprocessAnimation(GameObject root, AnimationClip clip)
         {
-            if (!IsMixamoAnimation(assetPath))
+            if (!IsEnabled || !IsMixamoAnimation(assetPath))
                 return;
 
             string clipNameLower = clip.name.ToLower();
@@ -57,17 +91,30 @@ namespace MixamoMcp.Editor
             Debug.Log("[MixamoHelper] Animation '" + clip.name + "' - Loop: " + shouldLoop);
         }
 
+        /// <summary>
+        /// Check if the asset path is a Mixamo animation.
+        /// Uses EXACT folder name matching to avoid false positives.
+        /// Only matches if a parent folder is exactly named "Mixamo" (or similar).
+        /// </summary>
         private bool IsMixamoAnimation(string path)
         {
             if (!path.EndsWith(".fbx", System.StringComparison.OrdinalIgnoreCase))
                 return false;
 
-            string pathLower = path.ToLower();
-            
-            foreach (var pattern in MixamoFolderPatterns)
+            // Get all parent folder names
+            string directory = Path.GetDirectoryName(path);
+            if (string.IsNullOrEmpty(directory))
+                return false;
+
+            // Check each parent folder for exact match
+            string[] pathParts = directory.Replace("\\", "/").Split('/');
+            foreach (string folderName in pathParts)
             {
-                if (pathLower.Contains(pattern.ToLower()))
-                    return true;
+                foreach (string pattern in ExactFolderNames)
+                {
+                    if (string.Equals(folderName, pattern, System.StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
             }
             
             return false;
