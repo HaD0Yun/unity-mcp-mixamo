@@ -29,10 +29,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-sse = [
-    "starlette>=0.40.0",
-    "uvicorn>=0.30.0",
-]
 dev = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
