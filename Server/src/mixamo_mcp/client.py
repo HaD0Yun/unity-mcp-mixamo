@@ -610,8 +610,8 @@ class MixamoClient:
                 "character_id": character_id,
                 "gms_hash": gms_hash,
                 "preferences": {
-                    "format": "fbx7",
-                    "skin": "false",
+                    "format": "fbx7_2019",
+                    "skin": "true",
                     "fps": "30",
                     "reducekf": "0",
                 },
